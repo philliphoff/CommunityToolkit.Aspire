@@ -1,7 +1,7 @@
-using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
+using CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
 
-namespace CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
+namespace Aspire.Hosting;
 
 /// <summary>
 /// 
