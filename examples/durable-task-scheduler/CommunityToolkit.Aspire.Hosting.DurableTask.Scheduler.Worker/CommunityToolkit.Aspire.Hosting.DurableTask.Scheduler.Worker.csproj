@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.ServiceDefaults\CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.ServiceDefaults.csproj" />
+  </ItemGroup>
+</Project>

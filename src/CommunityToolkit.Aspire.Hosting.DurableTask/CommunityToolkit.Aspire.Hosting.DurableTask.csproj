@@ -10,6 +10,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="CommunityToolkit.Aspire.Hosting.Dapr.Tests" />
+    <InternalsVisibleTo Include="CommunityToolkit.Aspire.Hosting.DurableTask.Tests" />
   </ItemGroup>
 </Project>

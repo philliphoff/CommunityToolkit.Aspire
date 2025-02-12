@@ -10,7 +10,7 @@ namespace CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
 public sealed class DurableTaskSchedulerResource(string name)
     : Resource(name), IResourceWithConnectionString, IResourceWithEndpoints
 {
-    private EndpointReference EmulatorEndpoint => new(this, "http2");
+    private EndpointReference EmulatorSchedulerEndpoint => new(this, "grpc");
 
     /// <summary>
     /// 
@@ -26,63 +26,23 @@ public sealed class DurableTaskSchedulerResource(string name)
     /// <summary>
     /// 
     /// </summary>
-    public Uri Endpoint { get; set; } = default!;
+    public Uri SchedulerEndpoint { get; set; } = default!;
 
     /// <summary>
     /// 
     /// </summary>
     public bool IsEmulator => this.IsContainer();
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public string? TaskHubName { get; set; }
-
     private ReferenceExpression CreateConnectionString(string? applicationName = null)
     {
         if (this.IsEmulator)
         {
-            return this.CreateEmulatorConnectionString(applicationName);
+            return ReferenceExpression.Create($"Endpoint={this.EmulatorSchedulerEndpoint};Authentication={this.Authentication}");
         }
         else
         {
-            IEnumerable<KeyValuePair<string, string>> properties =
-            [
-                new("Endpoint", this.Endpoint.ToString())
-            ];
-
-            if (this.Authentication is not null)
-            {
-                properties = properties.Append(new("Authentication", this.Authentication));
-            }
-
-            if (this.TaskHubName is not null)
-            {
-                properties = properties.Append(new("TaskHub", this.TaskHubName));
-            }
-
-            return ReferenceExpression.Create($"{this.CreateConnectionString(properties)}");
+            return ReferenceExpression.Create($"Endpoint={this.SchedulerEndpoint.ToString()};Authentication={this.Authentication}");
         }
-    }
-
-    private ReferenceExpression CreateEmulatorConnectionString(string? applicationName)
-    {
-        IEnumerable<KeyValuePair<string, string>> taskHubProperties =
-        [
-            new("Endpoint", $"http://host.docker.internal:{Endpoint.Port}")
-        ];
-
-        if (this.Authentication is not null)
-        {
-            taskHubProperties = taskHubProperties.Append(new("Authentication", this.Authentication));
-        }
-
-        if (this.TaskHubName is not null)
-        {
-            taskHubProperties = taskHubProperties.Append(new("TaskHub", this.TaskHubName));
-        }
-
-        return ReferenceExpression.Create($"{this.CreateConnectionString(taskHubProperties)}");
     }
 
     private string CreateConnectionString(IEnumerable<KeyValuePair<string, string>> properties)
