@@ -14,7 +14,7 @@ public class DurableTaskHubResource(string name, DurableTaskSchedulerResource pa
     /// 
     /// </summary>
     public ReferenceExpression ConnectionStringExpression =>
-        ReferenceExpression.Create($"{this.Parent.ConnectionStringExpression};TaskHub={this.TaskHubName ?? "default"}");
+        ReferenceExpression.Create($"{this.Parent.ConnectionStringExpression};TaskHub={this.TaskHubName ?? Constants.Scheduler.TaskHub.DefaultName}");
 
     /// <summary>
     /// 

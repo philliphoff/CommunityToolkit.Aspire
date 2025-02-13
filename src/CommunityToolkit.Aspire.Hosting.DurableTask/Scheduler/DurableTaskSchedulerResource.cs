@@ -10,7 +10,8 @@ namespace CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
 public sealed class DurableTaskSchedulerResource(string name)
     : Resource(name), IResourceWithConnectionString, IResourceWithEndpoints
 {
-    private EndpointReference EmulatorSchedulerEndpoint => new(this, "worker");
+    private EndpointReference EmulatorDashboardEndpoint => new(this, Constants.Scheduler.Emulator.Endpoints.Dashboard);
+    private EndpointReference EmulatorSchedulerEndpoint => new(this, Constants.Scheduler.Emulator.Endpoints.Worker);
 
     /// <summary>
     /// 
@@ -20,8 +21,19 @@ public sealed class DurableTaskSchedulerResource(string name)
     /// <summary>
     /// 
     /// </summary>
+    public string? ClientId { get; set; }
+    
+    /// <summary>
+    /// 
+    /// </summary>
     public ReferenceExpression ConnectionStringExpression =>
         this.CreateConnectionString();
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public ReferenceExpression DashboardEndpointExpression =>
+        this.CreateDashboardEndpoint();
 
     /// <summary>
     /// 
@@ -35,18 +47,32 @@ public sealed class DurableTaskSchedulerResource(string name)
 
     private ReferenceExpression CreateConnectionString(string? applicationName = null)
     {
+        string connectionString = $"Authentication={this.Authentication ?? DurableTaskSchedulerAuthentication.None}";
+        
+        if (this.ClientId is not null)
+        {
+            connectionString += $";ClientId={this.ClientId}";
+        }
+        
         if (this.IsEmulator)
         {
-            return ReferenceExpression.Create($"Endpoint={this.EmulatorSchedulerEndpoint};Authentication={this.Authentication ?? "None"}");
+            return ReferenceExpression.Create($"Endpoint={this.EmulatorSchedulerEndpoint};{connectionString}");
         }
         else
         {
-            return ReferenceExpression.Create($"Endpoint={this.SchedulerEndpoint.ToString()};Authentication={this.Authentication ?? "None"}");
+            return ReferenceExpression.Create($"Endpoint={this.SchedulerEndpoint.ToString()};{connectionString}");
         }
     }
-
-    private string CreateConnectionString(IEnumerable<KeyValuePair<string, string>> properties)
+    
+    private ReferenceExpression CreateDashboardEndpoint()
     {
-        return String.Join(';', properties.Select(property => $"{property.Key}={property.Value}"));
+        if (this.IsEmulator)
+        {
+            return ReferenceExpression.Create($"{this.EmulatorDashboardEndpoint}");
+        }
+        else
+        {
+            return ReferenceExpression.Create($"{Constants.Scheduler.Dashboard.Endpoint.ToString()}");
+        }
     }
 }

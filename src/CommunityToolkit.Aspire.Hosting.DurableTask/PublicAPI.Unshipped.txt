@@ -5,16 +5,23 @@ CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskHubResource.Dur
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskHubResource.Parent.get -> CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource!
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskHubResource.TaskHubName.get -> string?
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskHubResource.TaskHubName.set -> void
+CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerAuthentication
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerEmulatorResource
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerEmulatorResource.DurableTaskSchedulerEmulatorResource(CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource! innerResource) -> void
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.Authentication.get -> string?
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.Authentication.set -> void
+CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.ClientId.get -> string?
+CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.ClientId.set -> void
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.ConnectionStringExpression.get -> Aspire.Hosting.ApplicationModel.ReferenceExpression!
+CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.DashboardEndpointExpression.get -> Aspire.Hosting.ApplicationModel.ReferenceExpression!
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.DurableTaskSchedulerResource(string! name) -> void
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.IsEmulator.get -> bool
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.SchedulerEndpoint.get -> System.Uri!
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.SchedulerEndpoint.set -> void
+const CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerAuthentication.Default = "DefaultAzure" -> string!
+const CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerAuthentication.ManagedIdentity = "ManagedIdentity" -> string!
+const CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerAuthentication.None = "None" -> string!
 override CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerEmulatorResource.Annotations.get -> Aspire.Hosting.ApplicationModel.ResourceAnnotationCollection!
 override CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerEmulatorResource.Name.get -> string!
 Aspire.Hosting.DurableTaskSchedulerExtensions

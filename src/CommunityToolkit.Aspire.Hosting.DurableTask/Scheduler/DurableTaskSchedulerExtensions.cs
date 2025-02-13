@@ -1,5 +1,7 @@
 using Aspire.Hosting.ApplicationModel;
+using CommunityToolkit.Aspire.Hosting.DurableTask;
 using CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
+using System.Diagnostics;
 
 namespace Aspire.Hosting;
 
@@ -40,8 +42,8 @@ public static class DurableTaskSchedulerExtensions
         }
 
         builder
-            .WithEndpoint(name: "worker", scheme: "http", targetPort: 8080)
-            .WithEndpoint(name: "dashboard", scheme: "http", targetPort: 8082)
+            .WithEndpoint(name: Constants.Scheduler.Emulator.Endpoints.Worker, scheme: "http", targetPort: 8080)
+            .WithEndpoint(name: Constants.Scheduler.Emulator.Endpoints.Dashboard, scheme: "http", targetPort: 8082)
             .WithAnnotation(new ContainerRuntimeArgsCallbackAnnotation(
                 args =>
                 {
@@ -51,8 +53,8 @@ public static class DurableTaskSchedulerExtensions
             .WithAnnotation(
                 new ContainerImageAnnotation
                 {
-                    Image = "dts-emulator",
-                    Tag = "latest-amd64"
+                    Image = Constants.Scheduler.Emulator.Container.Image,
+                    Tag = Constants.Scheduler.Emulator.Container.Tag
                 });
 
         if (configureContainer is not null)
@@ -64,6 +66,18 @@ public static class DurableTaskSchedulerExtensions
             configureContainer(surrogateBuilder);
         }
 
+        builder.WithCommand(
+            "durabletask-scheduler-open-dashboard",
+            "Open Dashboard",
+            async context =>
+            {
+                var dashboardEndpoint = await builder.Resource.DashboardEndpointExpression.GetValueAsync(context.CancellationToken);
+
+                Process.Start(new ProcessStartInfo { FileName = dashboardEndpoint, UseShellExecute = true });
+
+                return CommandResults.Success();
+            });
+        
         return builder;
     }
     
