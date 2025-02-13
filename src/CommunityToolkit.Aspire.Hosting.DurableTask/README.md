@@ -24,7 +24,6 @@ var scheduler = builder.AddDurableTaskScheduler("scheduler");
 var taskHub = scheduler.AddDurableTaskHub("taskhub");
 
 builder.AddProject<Projects.MyApp>("myapp")
-       .WithDaprSidecar()
        .WithReference(taskHub);
 
 builder.Build().Run();

@@ -14,13 +14,13 @@ public class DurableTaskHubResource(string name, DurableTaskSchedulerResource pa
     /// 
     /// </summary>
     public ReferenceExpression ConnectionStringExpression =>
-        ReferenceExpression.Create($"{this.Parent.ConnectionStringExpression};TaskHub={this.TaskHubName ?? Constants.Scheduler.TaskHub.DefaultName}");
+        ReferenceExpression.Create($"{this.Parent.ConnectionStringExpression};TaskHub={this.ResolveTaskHubName()}");
 
     /// <summary>
     /// 
     /// </summary>
     public ReferenceExpression DashboardEndpointExpression =>
-        this.Parent.DashboardEndpointExpression;
+        this.GetDashboardEndpoint();
 
     /// <summary>
     /// 
@@ -31,4 +31,25 @@ public class DurableTaskHubResource(string name, DurableTaskSchedulerResource pa
     /// 
     /// </summary>
     public string? TaskHubName { get; set; }
+
+    ReferenceExpression GetDashboardEndpoint()
+    {
+        return ReferenceExpression.Create(
+            $"{this.Parent.DashboardEndpointExpression}/subscriptions/default/schedulers/default/taskhubs/{this.ResolveTaskHubName()}?endpoint={QueryParameterReference.Create(this.Parent.DashboardEndpointExpression)}");
+    }
+
+    string ResolveTaskHubName()
+    {
+        if (TaskHubName is not null)
+        {
+            return TaskHubName;
+        }
+
+        if (this.Parent.IsEmulator)
+        {
+            return Constants.Scheduler.TaskHub.DefaultName;
+        }
+
+        return this.Name;
+    }
 }

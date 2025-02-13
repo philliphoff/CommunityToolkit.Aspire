@@ -21,11 +21,11 @@ public static class DurableTaskSchedulerExtensions
     {
         DurableTaskSchedulerResource resource = new(name);
 
-        var resourceBuilder = builder.CreateResourceBuilder(resource);
+        var resourceBuilder = builder.AddResource(resource);
         
         configure?.Invoke(resourceBuilder);
 
-        return builder.AddResource(resource);
+        return resourceBuilder;
     }
 
     /// <summary>
@@ -95,6 +95,19 @@ public static class DurableTaskSchedulerExtensions
         }
 
         return taskHubResourceBuilder;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    public static IResourceBuilder<DurableTaskHubResource> WithTaskHubName(this IResourceBuilder<DurableTaskHubResource> builder, string name)
+    {
+        builder.Resource.TaskHubName = name;
+
+        return builder;
     }
 
     static IResourceBuilder<T> WithOpenDashboardCommand<T>(this IResourceBuilder<T> builder, ReferenceExpression dashboardEndpointExpression, bool isTaskHub = false) where T : IResource
