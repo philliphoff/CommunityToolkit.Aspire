@@ -19,6 +19,12 @@ public class DurableTaskHubResource(string name, DurableTaskSchedulerResource pa
     /// <summary>
     /// 
     /// </summary>
+    public ReferenceExpression DashboardEndpointExpression =>
+        this.Parent.DashboardEndpointExpression;
+
+    /// <summary>
+    /// 
+    /// </summary>
     public DurableTaskSchedulerResource Parent => parent;
 
     /// <summary>

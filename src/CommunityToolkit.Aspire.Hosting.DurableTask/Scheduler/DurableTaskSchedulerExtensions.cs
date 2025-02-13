@@ -66,18 +66,9 @@ public static class DurableTaskSchedulerExtensions
             configureContainer(surrogateBuilder);
         }
 
-        builder.WithCommand(
-            "durabletask-scheduler-open-dashboard",
-            "Open Dashboard",
-            async context =>
-            {
-                var dashboardEndpoint = await builder.Resource.DashboardEndpointExpression.GetValueAsync(context.CancellationToken);
+        builder.WithOpenDashboardCommand(
+            builder.Resource.DashboardEndpointExpression);
 
-                Process.Start(new ProcessStartInfo { FileName = dashboardEndpoint, UseShellExecute = true });
-
-                return CommandResults.Success();
-            });
-        
         return builder;
     }
     
@@ -92,8 +83,34 @@ public static class DurableTaskSchedulerExtensions
     {
         DurableTaskHubResource taskHubResource = new(name, builder.Resource);
 
-        configure?.Invoke(builder.ApplicationBuilder.CreateResourceBuilder(taskHubResource));
+        var taskHubResourceBuilder = builder.ApplicationBuilder.AddResource(taskHubResource);
+        
+        configure?.Invoke(taskHubResourceBuilder);
 
-        return builder.ApplicationBuilder.AddResource(taskHubResource);
+        if (builder.Resource.IsEmulator)
+        {
+            taskHubResourceBuilder.WithOpenDashboardCommand(
+                taskHubResource.DashboardEndpointExpression,
+                isTaskHub: true);
+        }
+
+        return taskHubResourceBuilder;
+    }
+
+    static IResourceBuilder<T> WithOpenDashboardCommand<T>(this IResourceBuilder<T> builder, ReferenceExpression dashboardEndpointExpression, bool isTaskHub = false) where T : IResource
+    {
+        return builder.WithCommand(
+            isTaskHub ? "durabletask-hub-open-dashboard" : "durabletask-scheduler-open-dashboard",
+            "Open Dashboard",
+            async context =>
+            {
+                var dashboardEndpoint = await dashboardEndpointExpression.GetValueAsync(context.CancellationToken);
+
+                Process.Start(new ProcessStartInfo { FileName = dashboardEndpoint, UseShellExecute = true });
+
+                return CommandResults.Success();
+            },
+            iconName: "GlobeArrowForward",
+            isHighlighted: isTaskHub);
     }
 }
