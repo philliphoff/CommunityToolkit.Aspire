@@ -15,11 +15,13 @@ public static class DurableTaskSchedulerExtensions
     /// <param name="name"></param>
     /// <param name="configure"></param>
     /// <returns></returns>
-    public static IResourceBuilder<DurableTaskSchedulerResource> AddDurableTaskScheduler(this IDistributedApplicationBuilder builder, string name, Action<DurableTaskSchedulerResource>? configure = null)
+    public static IResourceBuilder<DurableTaskSchedulerResource> AddDurableTaskScheduler(this IDistributedApplicationBuilder builder, string name, Action<IResourceBuilder<DurableTaskSchedulerResource>>? configure = null)
     {
         DurableTaskSchedulerResource resource = new(name);
 
-        configure?.Invoke(resource);
+        var resourceBuilder = builder.CreateResourceBuilder(resource);
+        
+        configure?.Invoke(resourceBuilder);
 
         return builder.AddResource(resource);
     }
@@ -63,5 +65,21 @@ public static class DurableTaskSchedulerExtensions
         }
 
         return builder;
+    }
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="name"></param>
+    /// <param name="configure"></param>
+    /// <returns></returns>
+    public static IResourceBuilder<DurableTaskHubResource> AddTaskHub(this IResourceBuilder<DurableTaskSchedulerResource> builder, string name, Action<IResourceBuilder<DurableTaskHubResource>>? configure = null)
+    {
+        DurableTaskHubResource taskHubResource = new(name, builder.Resource);
+
+        configure?.Invoke(builder.ApplicationBuilder.CreateResourceBuilder(taskHubResource));
+
+        return builder.ApplicationBuilder.AddResource(taskHubResource);
     }
 }

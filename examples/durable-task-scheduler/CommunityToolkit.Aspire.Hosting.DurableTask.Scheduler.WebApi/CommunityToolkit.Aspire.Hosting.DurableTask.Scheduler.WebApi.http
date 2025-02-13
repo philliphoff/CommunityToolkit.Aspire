@@ -1,6 +1,11 @@
-@CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.WebApi_HostAddress = http://localhost:5142
+@HostAddress = http://localhost:5142
 
-GET {{CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.WebApi_HostAddress}}/weatherforecast/
-Accept: application/json
+POST {{HostAddress}}/create
+Content-Type: application/json
+
+{
+  "text": "hello world"
+}
 
 ###
+

@@ -10,7 +10,7 @@ namespace CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
 public sealed class DurableTaskSchedulerResource(string name)
     : Resource(name), IResourceWithConnectionString, IResourceWithEndpoints
 {
-    private EndpointReference EmulatorSchedulerEndpoint => new(this, "grpc");
+    private EndpointReference EmulatorSchedulerEndpoint => new(this, "worker");
 
     /// <summary>
     /// 
@@ -37,11 +37,11 @@ public sealed class DurableTaskSchedulerResource(string name)
     {
         if (this.IsEmulator)
         {
-            return ReferenceExpression.Create($"Endpoint={this.EmulatorSchedulerEndpoint};Authentication={this.Authentication}");
+            return ReferenceExpression.Create($"Endpoint={this.EmulatorSchedulerEndpoint};Authentication={this.Authentication ?? "None"}");
         }
         else
         {
-            return ReferenceExpression.Create($"Endpoint={this.SchedulerEndpoint.ToString()};Authentication={this.Authentication}");
+            return ReferenceExpression.Create($"Endpoint={this.SchedulerEndpoint.ToString()};Authentication={this.Authentication ?? "None"}");
         }
     }
 

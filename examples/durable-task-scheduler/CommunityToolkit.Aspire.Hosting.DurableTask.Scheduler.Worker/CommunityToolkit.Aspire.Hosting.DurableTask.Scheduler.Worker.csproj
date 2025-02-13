@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.DurableTask.Generators" OutputItemType="Analyzer" />
+    <PackageReference Include="Microsoft.DurableTask.Worker.AzureManaged" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
   </ItemGroup>
 

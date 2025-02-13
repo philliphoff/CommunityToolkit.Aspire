@@ -4,4 +4,8 @@
     <ProjectReference Include="..\CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.ServiceDefaults\CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.ServiceDefaults.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.DurableTask.Client.AzureManaged" />
+  </ItemGroup>
+
 </Project>
