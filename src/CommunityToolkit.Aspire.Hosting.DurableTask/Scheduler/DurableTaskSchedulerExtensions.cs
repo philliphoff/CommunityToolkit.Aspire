@@ -67,11 +67,29 @@ public static class DurableTaskSchedulerExtensions
         }
 
         builder.WithOpenDashboardCommand(
-            builder.Resource.DashboardEndpointExpression);
+            builder.Resource.DashboardEndpoint);
 
         return builder;
     }
-    
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="name"></param>
+    /// <param name="schedulerEndpoint"></param>
+    /// <param name="dashboardEndpoint"></param>
+    /// <returns></returns>
+    public static IResourceBuilder<DurableTaskSchedulerResource> RunAsExisting(this IResourceBuilder<DurableTaskSchedulerResource> builder, IResourceBuilder<ParameterResource> name, IResourceBuilder<ParameterResource> schedulerEndpoint, IResourceBuilder<ParameterResource>? dashboardEndpoint = null)
+    {
+        if (!builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
+        {
+            builder.WithAnnotation(new ExistingDurableTaskSchedulerAnnotation(name, schedulerEndpoint, dashboardEndpoint));
+        }
+
+        return builder;
+    }
+
     /// <summary>
     /// 
     /// </summary>

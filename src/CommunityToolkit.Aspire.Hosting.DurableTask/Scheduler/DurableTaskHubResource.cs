@@ -10,11 +10,8 @@ namespace CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
 public class DurableTaskHubResource(string name, DurableTaskSchedulerResource parent)
     : Resource(name), IResourceWithConnectionString, IResourceWithEndpoints, IResourceWithParent<DurableTaskSchedulerResource>
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public ReferenceExpression ConnectionStringExpression =>
-        ReferenceExpression.Create($"{this.Parent.ConnectionStringExpression};TaskHub={this.ResolveTaskHubName()}");
+    ReferenceExpression IResourceWithConnectionString.ConnectionStringExpression =>
+        ReferenceExpression.Create($"{(this.Parent as IResourceWithConnectionString).ConnectionStringExpression};TaskHub={this.ResolveTaskHubName()}");
 
     /// <summary>
     /// 
@@ -35,7 +32,7 @@ public class DurableTaskHubResource(string name, DurableTaskSchedulerResource pa
     ReferenceExpression GetDashboardEndpoint()
     {
         return ReferenceExpression.Create(
-            $"{this.Parent.DashboardEndpointExpression}/subscriptions/default/schedulers/default/taskhubs/{this.ResolveTaskHubName()}?endpoint={QueryParameterReference.Create(this.Parent.DashboardEndpointExpression)}");
+            $"{this.Parent.DashboardEndpoint}/subscriptions/default/schedulers/default/taskhubs/{this.ResolveTaskHubName()}?endpoint={QueryParameterReference.Create(this.Parent.DashboardEndpoint)}");
     }
 
     string ResolveTaskHubName()
