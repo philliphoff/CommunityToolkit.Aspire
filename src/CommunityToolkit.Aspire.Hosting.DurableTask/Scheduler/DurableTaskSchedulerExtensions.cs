@@ -25,6 +25,9 @@ public static class DurableTaskSchedulerExtensions
         
         configure?.Invoke(resourceBuilder);
 
+        resourceBuilder.WithOpenDashboardCommand(
+            resourceBuilder.Resource.DashboardEndpoint);
+
         return resourceBuilder;
     }
 
@@ -66,9 +69,6 @@ public static class DurableTaskSchedulerExtensions
             configureContainer(surrogateBuilder);
         }
 
-        builder.WithOpenDashboardCommand(
-            builder.Resource.DashboardEndpoint);
-
         return builder;
     }
 
@@ -84,7 +84,7 @@ public static class DurableTaskSchedulerExtensions
     {
         if (!builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
         {
-            builder.WithAnnotation(new ExistingDurableTaskSchedulerAnnotation(name, schedulerEndpoint, dashboardEndpoint));
+            builder.WithAnnotation(new ExistingDurableTaskSchedulerAnnotation(name.Resource, schedulerEndpoint.Resource, dashboardEndpoint?.Resource));
         }
 
         return builder;
@@ -105,12 +105,9 @@ public static class DurableTaskSchedulerExtensions
         
         configure?.Invoke(taskHubResourceBuilder);
 
-        if (builder.Resource.IsEmulator)
-        {
-            taskHubResourceBuilder.WithOpenDashboardCommand(
-                taskHubResource.DashboardEndpointExpression,
-                isTaskHub: true);
-        }
+        taskHubResourceBuilder.WithOpenDashboardCommand(
+            taskHubResource.DashboardEndpoint,
+            isTaskHub: true);
 
         return taskHubResourceBuilder;
     }
@@ -128,20 +125,25 @@ public static class DurableTaskSchedulerExtensions
         return builder;
     }
 
-    static IResourceBuilder<T> WithOpenDashboardCommand<T>(this IResourceBuilder<T> builder, ReferenceExpression dashboardEndpointExpression, bool isTaskHub = false) where T : IResource
+    static IResourceBuilder<T> WithOpenDashboardCommand<T>(this IResourceBuilder<T> builder, ReferenceExpression dashboardEndpointExpression, bool isTaskHub = false) where T : IResourceWithDashboard
     {
-        return builder.WithCommand(
-            isTaskHub ? "durabletask-hub-open-dashboard" : "durabletask-scheduler-open-dashboard",
-            "Open Dashboard",
-            async context =>
-            {
-                var dashboardEndpoint = await dashboardEndpointExpression.GetValueAsync(context.CancellationToken);
+        if (!builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
+        {
+            builder.WithCommand(
+                isTaskHub ? "durabletask-hub-open-dashboard" : "durabletask-scheduler-open-dashboard",
+                "Open Dashboard",
+                async context =>
+                {
+                    var dashboardEndpoint = await builder.Resource.DashboardEndpoint.GetValueAsync(context.CancellationToken);
 
-                Process.Start(new ProcessStartInfo { FileName = dashboardEndpoint, UseShellExecute = true });
+                    Process.Start(new ProcessStartInfo { FileName = dashboardEndpoint, UseShellExecute = true });
 
-                return CommandResults.Success();
-            },
-            iconName: "GlobeArrowForward",
-            isHighlighted: isTaskHub);
+                    return CommandResults.Success();
+                },
+                iconName: "GlobeArrowForward",
+                isHighlighted: isTaskHub);
+        }
+
+        return builder;
     }
 }

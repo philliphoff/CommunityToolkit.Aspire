@@ -8,7 +8,7 @@ namespace CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
 /// </summary>
 /// <param name="name"></param>
 public sealed class DurableTaskSchedulerResource(string name)
-    : Resource(name), IResourceWithConnectionString, IResourceWithEndpoints
+    : Resource(name), IResourceWithConnectionString, IResourceWithEndpoints, IResourceWithDashboard
 {
     private EndpointReference EmulatorDashboardEndpoint => new(this, Constants.Scheduler.Emulator.Endpoints.Dashboard);
     private EndpointReference EmulatorSchedulerEndpoint => new(this, Constants.Scheduler.Emulator.Endpoints.Worker);

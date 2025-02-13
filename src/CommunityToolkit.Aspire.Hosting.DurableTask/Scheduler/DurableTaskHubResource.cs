@@ -8,7 +8,7 @@ namespace CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
 /// <param name="name"></param>
 /// <param name="parent"></param>
 public class DurableTaskHubResource(string name, DurableTaskSchedulerResource parent)
-    : Resource(name), IResourceWithConnectionString, IResourceWithEndpoints, IResourceWithParent<DurableTaskSchedulerResource>
+    : Resource(name), IResourceWithConnectionString, IResourceWithEndpoints, IResourceWithParent<DurableTaskSchedulerResource>, IResourceWithDashboard
 {
     ReferenceExpression IResourceWithConnectionString.ConnectionStringExpression =>
         ReferenceExpression.Create($"{(this.Parent as IResourceWithConnectionString).ConnectionStringExpression};TaskHub={this.ResolveTaskHubName()}");
@@ -16,7 +16,7 @@ public class DurableTaskHubResource(string name, DurableTaskSchedulerResource pa
     /// <summary>
     /// 
     /// </summary>
-    public ReferenceExpression DashboardEndpointExpression =>
+    public ReferenceExpression DashboardEndpoint =>
         this.GetDashboardEndpoint();
 
     /// <summary>
@@ -32,7 +32,7 @@ public class DurableTaskHubResource(string name, DurableTaskSchedulerResource pa
     ReferenceExpression GetDashboardEndpoint()
     {
         return ReferenceExpression.Create(
-            $"{this.Parent.DashboardEndpoint}/subscriptions/default/schedulers/default/taskhubs/{this.ResolveTaskHubName()}?endpoint={QueryParameterReference.Create(this.Parent.DashboardEndpoint)}");
+            $"{this.Parent.DashboardEndpoint}subscriptions/default/schedulers/default/taskhubs/{this.ResolveTaskHubName()}?endpoint={QueryParameterReference.Create(this.Parent.SchedulerEndpoint)}");
     }
 
     string ResolveTaskHubName()
