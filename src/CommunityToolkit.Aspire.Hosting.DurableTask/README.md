@@ -12,16 +12,41 @@ In your AppHost project, install the .NET Aspire Durable Task Hosting library wi
 dotnet add package CommunityToolkit.Aspire.Hosting.DurableTask
 ```
 
-## Usage example
+## Durable Task Scheduler usage example
 
-Then, in the _Program.cs_ file of `AppHost`, add Dapr resources and consume the connection using the following methods:
+### Using the emulator
+
+In the _Program.cs_ file of `AppHost`, add Durable Task Scheduler resources and consume the connection using the following methods:
 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
 
-var scheduler = builder.AddDurableTaskScheduler("scheduler");
+var scheduler = builder.AddDurableTaskScheduler("scheduler")
+                       .RunAsEmulator();
 
 var taskHub = scheduler.AddDurableTaskHub("taskhub");
+
+builder.AddProject<Projects.MyApp>("myapp")
+       .WithReference(taskHub);
+
+builder.Build().Run();
+```
+
+### Using an existing Durable Task Scheduler
+
+In the _Program.cs_ file of `AppHost`, add Durable Task Scheduler resources and consume the connection using the following methods:
+
+```csharp
+var builder = DistributedApplication.CreateBuilder(args);
+
+var scheduler = builder.AddDurableTaskScheduler("scheduler")
+                       .RunAsExisting(
+                           name: "myscheduler",
+                           subscriptionId: "mysubscription",
+                           schedulerEndpoint: "https://myscheduler.durabletask.io");
+
+var taskHub = scheduler.AddDurableTaskHub("taskhub")
+                       .WithTaskHubName("mytaskhub");
 
 builder.AddProject<Projects.MyApp>("myapp")
        .WithReference(taskHub);
