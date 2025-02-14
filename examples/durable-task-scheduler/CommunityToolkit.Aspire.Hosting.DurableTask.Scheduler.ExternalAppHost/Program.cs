@@ -1,14 +1,17 @@
+using Microsoft.Extensions.Configuration;
+
 var builder = DistributedApplication.CreateBuilder(args);
 
 var scheduler =
     builder.AddDurableTaskScheduler("scheduler")
-           .RunAsEmulator(
-                options =>
-                {
-                    options.WithImage("mcr.microsoft.com/durable-task/dts-emulator", "latest-linux-arm64");
-                });
+           .RunAsExisting(
+                builder.AddParameter("scheduler-name"),
+                builder.AddParameter("scheduler-subscription"),
+                builder.AddParameter("scheduler-endpoint"));
 
-var taskHub = scheduler.AddTaskHub("taskhub");
+var taskHub =
+    scheduler.AddTaskHub("taskhub")
+             .WithTaskHubName(builder.AddParameter("taskhub-name"));
 
 var webApi =
     builder.AddProject<Projects.CommunityToolkit_Aspire_Hosting_DurableTask_Scheduler_WebApi>("webapi")

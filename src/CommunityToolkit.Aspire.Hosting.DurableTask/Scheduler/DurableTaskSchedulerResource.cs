@@ -43,6 +43,26 @@ public sealed class DurableTaskSchedulerResource(string name)
     public ReferenceExpression SchedulerEndpoint =>
         this.CreateSchedulerEndpoint();
 
+    internal ReferenceExpression ResolveSubscriptionId(ReferenceExpression defaultValue)
+    {
+        if (this.TryGetLastAnnotation(out ExistingDurableTaskSchedulerAnnotation? annotation))
+        {
+            return ReferenceExpression.Create($"{annotation.SubscriptionId}");
+        }
+
+        return defaultValue;
+    }
+    
+    internal ReferenceExpression ResolveSchedulerName(ReferenceExpression defaultValue)
+    {
+        if (this.TryGetLastAnnotation(out ExistingDurableTaskSchedulerAnnotation? annotation))
+        {
+            return ReferenceExpression.Create($"{annotation.Name}");
+        }
+
+        return defaultValue;
+    }
+
     private ReferenceExpression CreateConnectionString(string? applicationName = null)
     {
         string connectionString = $"Authentication={this.Authentication ?? DurableTaskSchedulerAuthentication.None}";
@@ -67,12 +87,7 @@ public sealed class DurableTaskSchedulerResource(string name)
             return ReferenceExpression.Create($"{Constants.Scheduler.Dashboard.Endpoint.ToString()}");
         }
 
-        if (annotation.DashboardEndpoint is ParameterResource valueProvider)
-        {
-            return ReferenceExpression.Create($"{valueProvider}");
-        }
-
-        return ReferenceExpression.Create($"{annotation.DashboardEndpoint.ToString()}");
+        return ReferenceExpression.Create($"{annotation.DashboardEndpoint}");
     }
     
     private ReferenceExpression CreateSchedulerEndpoint()
@@ -87,11 +102,6 @@ public sealed class DurableTaskSchedulerResource(string name)
             throw new InvalidOperationException("Scheduler endpoint is not set.");
         }
 
-        if (annotation.SchedulerEndpoint is ParameterResource valueProvider)
-        {
-            return ReferenceExpression.Create($"{valueProvider}");
-        }
-
-        return ReferenceExpression.Create($"{annotation.SchedulerEndpoint.ToString()}");
+        return ReferenceExpression.Create($"{annotation.SchedulerEndpoint}");
     }
 }

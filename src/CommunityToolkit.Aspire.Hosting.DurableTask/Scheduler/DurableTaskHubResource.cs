@@ -31,8 +31,10 @@ public class DurableTaskHubResource(string name, DurableTaskSchedulerResource pa
 
     ReferenceExpression GetDashboardEndpoint()
     {
+        var defaultValue = ReferenceExpression.Create($"default");
+
         return ReferenceExpression.Create(
-            $"{this.Parent.DashboardEndpoint}subscriptions/default/schedulers/default/taskhubs/{this.ResolveTaskHubName()}?endpoint={QueryParameterReference.Create(this.Parent.SchedulerEndpoint)}");
+            $"{this.Parent.DashboardEndpoint}subscriptions/{this.Parent.ResolveSubscriptionId(defaultValue)}/schedulers/{this.Parent.ResolveSchedulerName(defaultValue)}/taskhubs/{this.ResolveTaskHubName()}?endpoint={QueryParameterReference.Create(this.Parent.SchedulerEndpoint)}");
     }
 
     string ResolveTaskHubName()

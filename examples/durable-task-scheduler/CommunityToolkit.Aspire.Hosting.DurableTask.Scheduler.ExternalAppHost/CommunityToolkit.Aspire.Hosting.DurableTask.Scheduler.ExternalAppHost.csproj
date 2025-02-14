@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Sdk Name="Aspire.AppHost.Sdk" Version="$(AspireAppHostSdkVersion)" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsAspireHost>true</IsAspireHost>
+    <UserSecretsId>2d2f77c2-9a69-4deb-ab4b-0fb9482b6096</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\CommunityToolkit.Aspire.Hosting.DurableTask\CommunityToolkit.Aspire.Hosting.DurableTask.csproj" IsAspireProjectResource="false" />
+    <ProjectReference Include="..\CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.WebApi\CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.WebApi.csproj" />
+    <ProjectReference Include="..\CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.Worker\CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.Worker.csproj" />
+  </ItemGroup>
+
+</Project>

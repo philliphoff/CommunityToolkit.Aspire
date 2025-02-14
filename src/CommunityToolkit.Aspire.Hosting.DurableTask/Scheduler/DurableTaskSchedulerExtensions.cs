@@ -1,6 +1,7 @@
 using Aspire.Hosting.ApplicationModel;
 using CommunityToolkit.Aspire.Hosting.DurableTask;
 using CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
+using Microsoft.AspNetCore.Authentication;
 using System.Diagnostics;
 
 namespace Aspire.Hosting;
@@ -77,14 +78,72 @@ public static class DurableTaskSchedulerExtensions
     /// </summary>
     /// <param name="builder"></param>
     /// <param name="name"></param>
+    /// <param name="subscriptionId"></param>
+    /// <param name="schedulerEndpoint"></param>
+    /// <returns></returns>
+    public static IResourceBuilder<DurableTaskSchedulerResource> RunAsExisting(this IResourceBuilder<DurableTaskSchedulerResource> builder, string name, string subscriptionId, string schedulerEndpoint)
+    {
+        return RunAsExisting(builder, name, subscriptionId, schedulerEndpoint, null);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="name"></param>
+    /// <param name="subscriptionId"></param>
     /// <param name="schedulerEndpoint"></param>
     /// <param name="dashboardEndpoint"></param>
     /// <returns></returns>
-    public static IResourceBuilder<DurableTaskSchedulerResource> RunAsExisting(this IResourceBuilder<DurableTaskSchedulerResource> builder, IResourceBuilder<ParameterResource> name, IResourceBuilder<ParameterResource> schedulerEndpoint, IResourceBuilder<ParameterResource>? dashboardEndpoint = null)
+    public static IResourceBuilder<DurableTaskSchedulerResource> RunAsExisting(this IResourceBuilder<DurableTaskSchedulerResource> builder, string name, string subscriptionId, string schedulerEndpoint, string? dashboardEndpoint)
     {
         if (!builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
         {
-            builder.WithAnnotation(new ExistingDurableTaskSchedulerAnnotation(name.Resource, schedulerEndpoint.Resource, dashboardEndpoint?.Resource));
+            builder.WithAnnotation(new ExistingDurableTaskSchedulerAnnotation(
+                ParameterWrapper.Create(name),
+                ParameterWrapper.Create(subscriptionId),
+                ParameterWrapper.Create(schedulerEndpoint),
+                dashboardEndpoint is not null ? ParameterWrapper.Create(dashboardEndpoint) : null));
+            
+            builder.Resource.Authentication = DurableTaskSchedulerAuthentication.Default;
+        }
+
+        return builder;
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="name"></param>
+    /// <param name="subscriptionId"></param>
+    /// <param name="schedulerEndpoint"></param>
+    /// <returns></returns>
+    public static IResourceBuilder<DurableTaskSchedulerResource> RunAsExisting(this IResourceBuilder<DurableTaskSchedulerResource> builder, IResourceBuilder<ParameterResource> name, IResourceBuilder<ParameterResource> subscriptionId, IResourceBuilder<ParameterResource> schedulerEndpoint)
+    {
+        return RunAsExisting(builder, name, subscriptionId, schedulerEndpoint, null);
+    }
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="name"></param>
+    /// <param name="subscriptionId"></param>
+    /// <param name="schedulerEndpoint"></param>
+    /// <param name="dashboardEndpoint"></param>
+    /// <returns></returns>
+    public static IResourceBuilder<DurableTaskSchedulerResource> RunAsExisting(this IResourceBuilder<DurableTaskSchedulerResource> builder, IResourceBuilder<ParameterResource> name, IResourceBuilder<ParameterResource> subscriptionId, IResourceBuilder<ParameterResource> schedulerEndpoint, IResourceBuilder<ParameterResource>? dashboardEndpoint)
+    {
+        if (!builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
+        {
+            builder.WithAnnotation(new ExistingDurableTaskSchedulerAnnotation(
+                ParameterWrapper.Create(name.Resource),
+                ParameterWrapper.Create(subscriptionId.Resource),
+                ParameterWrapper.Create(schedulerEndpoint.Resource),
+                dashboardEndpoint is not null ? ParameterWrapper.Create(dashboardEndpoint.Resource) : null));
+
+            builder.Resource.Authentication = DurableTaskSchedulerAuthentication.Default;
         }
 
         return builder;
@@ -125,6 +184,19 @@ public static class DurableTaskSchedulerExtensions
         return builder;
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="name"></param>
+    /// <returns></returns>
+    public static IResourceBuilder<DurableTaskHubResource> WithTaskHubName(this IResourceBuilder<DurableTaskHubResource> builder, IResourceBuilder<ParameterResource> name)
+    {
+        builder.Resource.TaskHubName = name.Resource.Value;
+
+        return builder;
+    }
+    
     static IResourceBuilder<T> WithOpenDashboardCommand<T>(this IResourceBuilder<T> builder, ReferenceExpression dashboardEndpointExpression, bool isTaskHub = false) where T : IResourceWithDashboard
     {
         if (!builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
