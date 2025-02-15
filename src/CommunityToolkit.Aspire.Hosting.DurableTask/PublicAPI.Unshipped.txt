@@ -1,6 +1,7 @@
 #nullable enable
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskHubResource
-CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskHubResource.DashboardEndpoint.get -> Aspire.Hosting.ApplicationModel.ReferenceExpression!
+CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskHubResource.ConnectionStringExpression.get -> Aspire.Hosting.ApplicationModel.ReferenceExpression!
+CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskHubResource.DashboardEndpointExpression.get -> Aspire.Hosting.ApplicationModel.ReferenceExpression!
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskHubResource.DurableTaskHubResource(string! name, CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource! parent) -> void
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskHubResource.Parent.get -> CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource!
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskHubResource.TaskHubName.get -> string?
@@ -13,10 +14,21 @@ CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResour
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.Authentication.set -> void
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.ClientId.get -> string?
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.ClientId.set -> void
-CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.DashboardEndpoint.get -> Aspire.Hosting.ApplicationModel.ReferenceExpression!
+CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.ConnectionStringExpression.get -> Aspire.Hosting.ApplicationModel.ReferenceExpression!
+CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.DashboardEndpoint.get -> System.Uri?
+CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.DashboardEndpoint.set -> void
+CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.DashboardEndpointExpression.get -> Aspire.Hosting.ApplicationModel.ReferenceExpression!
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.DurableTaskSchedulerResource(string! name) -> void
 CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.IsEmulator.get -> bool
-CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.SchedulerEndpoint.get -> Aspire.Hosting.ApplicationModel.ReferenceExpression!
+CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.SchedulerEndpoint.get -> System.Uri?
+CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.SchedulerEndpoint.set -> void
+CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.SchedulerEndpointExpression.get -> Aspire.Hosting.ApplicationModel.ReferenceExpression!
+CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.SchedulerName.get -> string?
+CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.SchedulerName.set -> void
+CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.SchedulerNameExpression.get -> Aspire.Hosting.ApplicationModel.ReferenceExpression?
+CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.SubscriptionId.get -> string?
+CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.SubscriptionId.set -> void
+CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerResource.SubscriptionIdExpression.get -> Aspire.Hosting.ApplicationModel.ReferenceExpression?
 const CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerAuthentication.Default = "DefaultAzure" -> string!
 const CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerAuthentication.ManagedIdentity = "ManagedIdentity" -> string!
 const CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.DurableTaskSchedulerAuthentication.None = "None" -> string!

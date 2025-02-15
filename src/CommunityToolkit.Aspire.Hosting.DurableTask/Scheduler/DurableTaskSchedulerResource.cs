@@ -22,9 +22,21 @@ public sealed class DurableTaskSchedulerResource(string name)
     /// 
     /// </summary>
     public string? ClientId { get; set; }
-    
-    ReferenceExpression IResourceWithConnectionString.ConnectionStringExpression =>
+
+    /// <inheritdoc />
+    public ReferenceExpression ConnectionStringExpression =>
         this.CreateConnectionString();
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public Uri? DashboardEndpoint { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public ReferenceExpression DashboardEndpointExpression =>
+        this.CreateDashboardEndpoint();
 
     /// <summary>
     /// 
@@ -34,36 +46,67 @@ public sealed class DurableTaskSchedulerResource(string name)
     /// <summary>
     /// 
     /// </summary>
-    public ReferenceExpression DashboardEndpoint =>
-        this.CreateDashboardEndpoint();
+    public Uri? SchedulerEndpoint { get; set; }
 
     /// <summary>
     /// 
     /// </summary>
-    public ReferenceExpression SchedulerEndpoint =>
+    public ReferenceExpression SchedulerEndpointExpression =>
         this.CreateSchedulerEndpoint();
 
-    internal ReferenceExpression ResolveSubscriptionId(ReferenceExpression defaultValue)
+    /// <summary>
+    /// 
+    /// </summary>
+    public string? SchedulerName { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public ReferenceExpression? SchedulerNameExpression =>
+        this.ResolveSchedulerName();
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public string? SubscriptionId { get; set; }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public ReferenceExpression? SubscriptionIdExpression =>
+        this.ResolveSubscriptionId();
+
+    ReferenceExpression? ResolveSubscriptionId()
     {
         if (this.TryGetLastAnnotation(out ExistingDurableTaskSchedulerAnnotation? annotation))
         {
             return ReferenceExpression.Create($"{annotation.SubscriptionId}");
         }
+        
+        if (this.SubscriptionId is not null)
+        {
+            return ReferenceExpression.Create($"{this.SubscriptionId}");
+        }
 
-        return defaultValue;
+        return null;
     }
     
-    internal ReferenceExpression ResolveSchedulerName(ReferenceExpression defaultValue)
+    ReferenceExpression? ResolveSchedulerName()
     {
         if (this.TryGetLastAnnotation(out ExistingDurableTaskSchedulerAnnotation? annotation))
         {
             return ReferenceExpression.Create($"{annotation.Name}");
         }
 
-        return defaultValue;
+        if (this.SchedulerName is not null)
+        {
+            return ReferenceExpression.Create($"{this.SchedulerName}");
+        }
+
+        return null;
     }
 
-    private ReferenceExpression CreateConnectionString(string? applicationName = null)
+    ReferenceExpression CreateConnectionString(string? applicationName = null)
     {
         string connectionString = $"Authentication={this.Authentication ?? DurableTaskSchedulerAuthentication.None}";
         
@@ -72,36 +115,48 @@ public sealed class DurableTaskSchedulerResource(string name)
             connectionString += $";ClientId={this.ClientId}";
         }
         
-        return ReferenceExpression.Create($"Endpoint={this.SchedulerEndpoint};{connectionString}");
+        return ReferenceExpression.Create($"Endpoint={this.SchedulerEndpointExpression};{connectionString}");
     }
     
-    private ReferenceExpression CreateDashboardEndpoint()
+    ReferenceExpression CreateDashboardEndpoint()
     {
         if (this.IsEmulator)
         {
-            return ReferenceExpression.Create($"{this.EmulatorDashboardEndpoint}");
+            // NOTE: Container endpoints do not include the trailing slash.
+            return ReferenceExpression.Create($"{this.EmulatorDashboardEndpoint}/");
         }
 
-        if (!this.TryGetLastAnnotation(out ExistingDurableTaskSchedulerAnnotation? annotation))
+        if (this.TryGetLastAnnotation(out ExistingDurableTaskSchedulerAnnotation? annotation))
         {
-            return ReferenceExpression.Create($"{Constants.Scheduler.Dashboard.Endpoint.ToString()}");
+            return ReferenceExpression.Create($"{annotation.DashboardEndpoint}");
         }
 
-        return ReferenceExpression.Create($"{annotation.DashboardEndpoint}");
+        if (this.DashboardEndpoint is not null)
+        {
+            return ReferenceExpression.Create($"{this.DashboardEndpoint.ToString()}");
+        }
+
+        return ReferenceExpression.Create($"{Constants.Scheduler.Dashboard.Endpoint.ToString()}");
     }
     
-    private ReferenceExpression CreateSchedulerEndpoint()
+    ReferenceExpression CreateSchedulerEndpoint()
     {
         if (this.IsEmulator)
         {
-            return ReferenceExpression.Create($"{this.EmulatorSchedulerEndpoint}");
+            // NOTE: Container endpoints do not include the trailing slash.
+            return ReferenceExpression.Create($"{this.EmulatorSchedulerEndpoint}/");
         }
 
-        if (!this.TryGetLastAnnotation(out ExistingDurableTaskSchedulerAnnotation? annotation))
+        if (this.TryGetLastAnnotation(out ExistingDurableTaskSchedulerAnnotation? annotation))
         {
-            throw new InvalidOperationException("Scheduler endpoint is not set.");
+            return ReferenceExpression.Create($"{annotation.SchedulerEndpoint}");
         }
 
-        return ReferenceExpression.Create($"{annotation.SchedulerEndpoint}");
+        if (this.SchedulerEndpoint is not null)
+        {
+            return ReferenceExpression.Create($"{this.SchedulerEndpoint.ToString()}");
+        }
+
+        throw new InvalidOperationException("Scheduler endpoint is not set.");
     }
 }

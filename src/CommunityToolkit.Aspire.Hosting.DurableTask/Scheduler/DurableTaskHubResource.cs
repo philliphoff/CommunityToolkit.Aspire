@@ -10,18 +10,17 @@ namespace CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
 public class DurableTaskHubResource(string name, DurableTaskSchedulerResource parent)
     : Resource(name), IResourceWithConnectionString, IResourceWithEndpoints, IResourceWithParent<DurableTaskSchedulerResource>, IResourceWithDashboard
 {
-    ReferenceExpression IResourceWithConnectionString.ConnectionStringExpression =>
-        ReferenceExpression.Create($"{(this.Parent as IResourceWithConnectionString).ConnectionStringExpression};TaskHub={this.ResolveTaskHubName()}");
+    /// <inheritdoc />
+    public ReferenceExpression ConnectionStringExpression =>
+        ReferenceExpression.Create($"{this.Parent.ConnectionStringExpression};TaskHub={this.ResolveTaskHubName()}");
 
     /// <summary>
     /// 
     /// </summary>
-    public ReferenceExpression DashboardEndpoint =>
+    public ReferenceExpression DashboardEndpointExpression =>
         this.GetDashboardEndpoint();
 
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <inheritdoc />
     public DurableTaskSchedulerResource Parent => parent;
 
     /// <summary>
@@ -33,8 +32,9 @@ public class DurableTaskHubResource(string name, DurableTaskSchedulerResource pa
     {
         var defaultValue = ReferenceExpression.Create($"default");
 
+        // NOTE: The endpoint is expected to have the trailing slash.
         return ReferenceExpression.Create(
-            $"{this.Parent.DashboardEndpoint}subscriptions/{this.Parent.ResolveSubscriptionId(defaultValue)}/schedulers/{this.Parent.ResolveSchedulerName(defaultValue)}/taskhubs/{this.ResolveTaskHubName()}?endpoint={QueryParameterReference.Create(this.Parent.SchedulerEndpoint)}");
+            $"{this.Parent.DashboardEndpointExpression}subscriptions/{this.Parent.SubscriptionIdExpression ?? defaultValue}/schedulers/{this.Parent.SchedulerNameExpression ?? defaultValue}/taskhubs/{this.ResolveTaskHubName()}?endpoint={QueryParameterReference.Create(this.Parent.SchedulerEndpointExpression)}");
     }
 
     string ResolveTaskHubName()

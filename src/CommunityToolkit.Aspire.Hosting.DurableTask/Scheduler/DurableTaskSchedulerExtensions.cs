@@ -27,7 +27,7 @@ public static class DurableTaskSchedulerExtensions
         configure?.Invoke(resourceBuilder);
 
         resourceBuilder.WithOpenDashboardCommand(
-            resourceBuilder.Resource.DashboardEndpoint);
+            resourceBuilder.Resource.DashboardEndpointExpression);
 
         return resourceBuilder;
     }
@@ -165,7 +165,7 @@ public static class DurableTaskSchedulerExtensions
         configure?.Invoke(taskHubResourceBuilder);
 
         taskHubResourceBuilder.WithOpenDashboardCommand(
-            taskHubResource.DashboardEndpoint,
+            taskHubResource.DashboardEndpointExpression,
             isTaskHub: true);
 
         return taskHubResourceBuilder;
@@ -206,7 +206,7 @@ public static class DurableTaskSchedulerExtensions
                 "Open Dashboard",
                 async context =>
                 {
-                    var dashboardEndpoint = await builder.Resource.DashboardEndpoint.GetValueAsync(context.CancellationToken);
+                    var dashboardEndpoint = await builder.Resource.DashboardEndpointExpression.GetValueAsync(context.CancellationToken);
 
                     Process.Start(new ProcessStartInfo { FileName = dashboardEndpoint, UseShellExecute = true });
 
