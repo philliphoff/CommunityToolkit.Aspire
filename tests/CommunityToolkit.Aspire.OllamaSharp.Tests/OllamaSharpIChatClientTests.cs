@@ -1,6 +1,8 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using OllamaSharp;
+using System.Runtime.CompilerServices;
 
 namespace CommunityToolkit.Aspire.OllamaSharp.Tests;
 
@@ -20,11 +22,11 @@ public class OllamaSharpIChatClientTests
 
         if (useKeyed)
         {
-            builder.AddKeyedOllamaSharpChatClient("Ollama");
+            builder.AddKeyedOllamaApiClient("Ollama").AddKeyedChatClient();
         }
         else
         {
-            builder.AddOllamaSharpChatClient("Ollama");
+            builder.AddOllamaApiClient("Ollama").AddChatClient();
         }
 
         using var host = builder.Build();
@@ -33,8 +35,8 @@ public class OllamaSharpIChatClientTests
             host.Services.GetRequiredKeyedService<IChatClient>("Ollama") :
             host.Services.GetRequiredService<IChatClient>();
 
-        Assert.NotNull(client.Metadata.ProviderUri);
-        Assert.Equal(Endpoint, client.Metadata.ProviderUri);
+        Assert.NotNull(client.GetService<ChatClientMetadata>()?.ProviderUri);
+        Assert.Equal(Endpoint, client.GetService<ChatClientMetadata>()?.ProviderUri);
     }
 
     [Theory]
@@ -49,11 +51,11 @@ public class OllamaSharpIChatClientTests
 
         if (useKeyed)
         {
-            builder.AddKeyedOllamaSharpChatClient("Ollama", settings => settings.Endpoint = Endpoint);
+            builder.AddKeyedOllamaApiClient("Ollama", settings => settings.Endpoint = Endpoint).AddKeyedChatClient();
         }
         else
         {
-            builder.AddOllamaSharpChatClient("Ollama", settings => settings.Endpoint = Endpoint);
+            builder.AddOllamaApiClient("Ollama", settings => settings.Endpoint = Endpoint).AddChatClient();
         }
 
         using var host = builder.Build();
@@ -61,9 +63,9 @@ public class OllamaSharpIChatClientTests
             host.Services.GetRequiredKeyedService<IChatClient>("Ollama") :
             host.Services.GetRequiredService<IChatClient>();
 
-        Assert.NotNull(client.Metadata.ProviderUri);
-        Assert.Equal(Endpoint, client.Metadata.ProviderUri);
-        Assert.DoesNotContain("http://not-used", client.Metadata.ProviderUri.ToString());
+        Assert.NotNull(client.GetService<ChatClientMetadata>()?.ProviderUri);
+        Assert.Equal(Endpoint, client.GetService<ChatClientMetadata>()?.ProviderUri);
+        Assert.DoesNotContain("http://not-used", client.GetService<ChatClientMetadata>()?.ProviderUri?.ToString());
     }
 
     [Theory]
@@ -79,11 +81,11 @@ public class OllamaSharpIChatClientTests
 
         if (useKeyed)
         {
-            builder.AddKeyedOllamaSharpChatClient("Ollama");
+            builder.AddKeyedOllamaApiClient("Ollama").AddKeyedChatClient();
         }
         else
         {
-            builder.AddOllamaSharpChatClient("Ollama");
+            builder.AddOllamaApiClient("Ollama").AddChatClient();
         }
 
         using var host = builder.Build();
@@ -91,9 +93,9 @@ public class OllamaSharpIChatClientTests
             host.Services.GetRequiredKeyedService<IChatClient>("Ollama") :
             host.Services.GetRequiredService<IChatClient>();
 
-        Assert.NotNull(client.Metadata.ProviderUri);
-        Assert.Equal(Endpoint, client.Metadata.ProviderUri);
-        Assert.DoesNotContain("http://not-used", client.Metadata.ProviderUri.ToString());
+        Assert.NotNull(client.GetService<ChatClientMetadata>()?.ProviderUri);
+        Assert.Equal(Endpoint, client.GetService<ChatClientMetadata>()?.ProviderUri);
+        Assert.DoesNotContain("http://not-used", client.GetService<ChatClientMetadata>()?.ProviderUri?.ToString());
     }
 
     [Fact]
@@ -106,20 +108,48 @@ public class OllamaSharpIChatClientTests
             new KeyValuePair<string, string?>("ConnectionStrings:Ollama3", "Endpoint=https://localhost:5003/")
         ]);
 
-        builder.AddOllamaSharpChatClient("Ollama");
-        builder.AddKeyedOllamaSharpChatClient("Ollama2");
-        builder.AddKeyedOllamaSharpChatClient("Ollama3");
+        builder.AddOllamaApiClient("Ollama").AddChatClient();
+        builder.AddKeyedOllamaApiClient("Ollama2").AddKeyedChatClient();
+        builder.AddKeyedOllamaApiClient("Ollama3").AddKeyedChatClient();
 
         using var host = builder.Build();
         var client = host.Services.GetRequiredService<IChatClient>();
         var client2 = host.Services.GetRequiredKeyedService<IChatClient>("Ollama2");
         var client3 = host.Services.GetRequiredKeyedService<IChatClient>("Ollama3");
 
-        Assert.Equal(Endpoint, client.Metadata.ProviderUri);
-        Assert.Equal("https://localhost:5002/", client2.Metadata.ProviderUri?.ToString());
-        Assert.Equal("https://localhost:5003/", client3.Metadata.ProviderUri?.ToString());
+        Assert.Equal(Endpoint, client.GetService<ChatClientMetadata>()?.ProviderUri);
+        Assert.Equal("https://localhost:5002/", client2.GetService<ChatClientMetadata>()?.ProviderUri?.ToString());
+        Assert.Equal("https://localhost:5003/", client3.GetService<ChatClientMetadata>()?.ProviderUri?.ToString());
 
         Assert.NotEqual(client, client2);
         Assert.NotEqual(client, client3);
     }
+
+    [Fact]
+    public void CanChainUseMethodsCorrectly()
+    {
+        var builder = Host.CreateEmptyApplicationBuilder(null);
+        builder.Configuration.AddInMemoryCollection([
+            new KeyValuePair<string, string?>("ConnectionStrings:Ollama",$"Endpoint={Endpoint}")
+        ]);
+
+        builder.Services.AddDistributedMemoryCache();
+
+        builder.AddOllamaApiClient("Ollama")
+            .AddChatClient()
+            .UseDistributedCache()
+            .UseFunctionInvocation();
+
+        using var host = builder.Build();
+        var client = host.Services.GetRequiredService<IChatClient>();
+        
+        var distributedCacheClient = Assert.IsType<DistributedCachingChatClient>(client);
+        var functionInvocationClient = Assert.IsType<FunctionInvokingChatClient>(GetInnerClient(distributedCacheClient));
+        var otelClient = Assert.IsType<OpenTelemetryChatClient>(GetInnerClient(functionInvocationClient));
+        
+        Assert.IsType<IOllamaApiClient>(GetInnerClient(otelClient), exactMatch: false);
+    }
+
+    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "get_InnerClient")]
+    private static extern IChatClient GetInnerClient(DelegatingChatClient client);
 }

@@ -24,16 +24,24 @@ internal class BunPackageInstallerLifecycleHook(
     {
         var logger = loggerService.GetLogger(resource);
 
-        var lockFilePath = Path.Combine(resource.WorkingDirectory, "bun.lockb");
+        // Bun v1.2 changed the default lockfile format to the text-based bun.lock. 
+        // This code currently supports both formats, but will need to be updated in the future.
+        var lockbFilePath = Path.Combine(resource.WorkingDirectory, "bun.lockb");
+        var lockFilePath = Path.Combine(resource.WorkingDirectory, "bun.lock");
 
-        if (!File.Exists(lockFilePath))
+        // Bun supports workspaces in package.json (https://bun.sh/docs/install/workspaces)
+        var packageJsonPath = Path.Combine(resource.WorkingDirectory, "package.json");
+
+        string[] filePaths = [lockbFilePath, lockFilePath, packageJsonPath];
+
+        if (!filePaths.Any(File.Exists))
         {
             await notificationService.PublishUpdateAsync(resource, state => state with
             {
-                State = new($"No bun.lockb file found in {resource.WorkingDirectory}", KnownResourceStates.FailedToStart)
+                State = new($"No package manager file found in {resource.WorkingDirectory}", KnownResourceStates.FailedToStart)
             }).ConfigureAwait(false);
 
-            throw new InvalidOperationException($"No bun.lockb file found in {resource.WorkingDirectory}");
+            throw new InvalidOperationException($"No package manager file found in {resource.WorkingDirectory}");
         }
 
         await notificationService.PublishUpdateAsync(resource, state => state with

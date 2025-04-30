@@ -11,11 +11,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedDir)\VolumeNameGenerator.cs" Link="Utils\VolumeNameGenerator.cs" />
+    <ProjectReference Include="..\CommunityToolkit.Aspire.Hosting.Adminer\CommunityToolkit.Aspire.Hosting.Adminer.csproj" />
+    <ProjectReference Include="..\CommunityToolkit.Aspire.Hosting.DbGate\CommunityToolkit.Aspire.Hosting.DbGate.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CommunityToolkit.Aspire.Hosting.DbGate\CommunityToolkit.Aspire.Hosting.DbGate.csproj" />
+    <Compile Include="$(SharedDir)\Adminer\AdminerLoginServer.cs" Link="AdminerLoginServer.cs" />
   </ItemGroup>
 
 </Project>

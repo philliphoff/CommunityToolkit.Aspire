@@ -13,11 +13,6 @@ internal class SqlProjectPublishService(IDacpacDeployer deployer, IHostEnvironme
 
         try
         {
-            if (target is SqlServerDatabaseResource)
-            {
-                await resourceNotificationService.WaitForDependenciesAsync(resource, cancellationToken);
-            }
-
             var dacpacPath = resource.GetDacpacPath();
             if (!Path.IsPathRooted(dacpacPath))
             {
@@ -30,6 +25,10 @@ internal class SqlProjectPublishService(IDacpacDeployer deployer, IHostEnvironme
                 await resourceNotificationService.PublishUpdateAsync(resource,
                     state => state with { State = new ResourceStateSnapshot(KnownResourceStates.FailedToStart, KnownResourceStateStyles.Error) });
                 return;
+            }
+            else
+            {
+                logger.LogInformation("SQL Server Database project package found at path {DacpacPath}.", dacpacPath);
             }
 
             var options = resource.GetDacpacDeployOptions();

@@ -1,5 +1,0 @@
-#nullable enable
-Aspire.Hosting.ActiveMQBuilderExtensions
-Aspire.Hosting.ApplicationModel.ActiveMQServerResource
-Aspire.Hosting.ApplicationModel.ActiveMQServerResource.ActiveMQServerResource(string! name, Aspire.Hosting.ApplicationModel.ParameterResource? userName, Aspire.Hosting.ApplicationModel.ParameterResource! password, string! scheme) -> void
-static Aspire.Hosting.ActiveMQBuilderExtensions.AddActiveMQ(this Aspire.Hosting.IDistributedApplicationBuilder! builder, string! name, Aspire.Hosting.ApplicationModel.IResourceBuilder<Aspire.Hosting.ApplicationModel.ParameterResource!>? userName = null, Aspire.Hosting.ApplicationModel.IResourceBuilder<Aspire.Hosting.ApplicationModel.ParameterResource!>? password = null, int? port = null, string! scheme = "tcp", int? webPort = null) -> Aspire.Hosting.ApplicationModel.IResourceBuilder<Aspire.Hosting.ApplicationModel.ActiveMQServerResource!>!

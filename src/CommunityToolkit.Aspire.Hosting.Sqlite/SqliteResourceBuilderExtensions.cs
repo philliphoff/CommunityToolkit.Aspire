@@ -1,4 +1,5 @@
 using Aspire.Hosting.ApplicationModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Aspire.Hosting;
 
@@ -63,9 +64,10 @@ public static class SqliteResourceBuilderExtensions
     /// Adds an Sqlite Web resource to the resource builder, to allow access to the Sqlite database via a web interface.
     /// </summary>
     /// <param name="builder">The resource builder.</param>
+    /// <param name="configureContainer">Callback to configure SqliteWeb container resource.</param>
     /// <param name="containerName">The optional name of the container.</param>
     /// <returns>A resource builder for the Sqlite resource.</returns>
-    public static IResourceBuilder<SqliteResource> WithSqliteWeb(this IResourceBuilder<SqliteResource> builder, string? containerName = null)
+    public static IResourceBuilder<SqliteResource> WithSqliteWeb(this IResourceBuilder<SqliteResource> builder, Action<IResourceBuilder<SqliteWebResource>>? configureContainer = null, string? containerName = null)
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
@@ -81,7 +83,57 @@ public static class SqliteResourceBuilderExtensions
                                 .WithBindMount(builder.Resource.DatabasePath, "/data")
                                 .WaitFor(builder)
                                 .WithHttpHealthCheck("/")
+                                .WithParentRelationship(builder.Resource)
                                 .ExcludeFromManifest();
+
+        configureContainer?.Invoke(resourceBuilder);
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds an extension to the Sqlite resource that will be loaded from a NuGet package.
+    /// </summary>
+    /// <param name="builder">The resource builder.</param>
+    /// <param name="extension">The name of the extension file with to add, eg: vec0, without file extension.</param>
+    /// <param name="packageName">The name of the NuGet package. If this is set to null, the value of <paramref name="extension"/> is used.</param>
+    /// <returns>The resource builder.</returns>
+    /// <remarks>
+    /// Extensions are not loaded by the hosting integration, the information is provided for the client to load the extensions.
+    /// 
+    /// This extension is experimental while the final design of extension loading is decided.
+    /// </remarks>
+    [Experimental("CTASPIRE002", UrlFormat = "https://aka.ms/communitytoolkit/aspire/diagnostics#{0}")]
+    public static IResourceBuilder<SqliteResource> WithNuGetExtension(this IResourceBuilder<SqliteResource> builder, string extension, string? packageName = null)
+    {
+        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        ArgumentException.ThrowIfNullOrEmpty(extension, nameof(extension));
+
+        builder.Resource.AddExtension(new(extension, packageName ?? extension, IsNuGetPackage: true, ExtensionFolder: null));
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds an extension to the Sqlite resource that will be loaded from a local path.
+    /// </summary>
+    /// <param name="builder">The resource builder.</param>
+    /// <param name="extension">The name of the extension file with to add, eg: vec0, without file extension.</param>
+    /// <param name="extensionPath">The path to the extension file.</param>
+    /// <returns>The resource builder.</returns>
+    /// <remarks>
+    /// Extensions are not loaded by the hosting integration, the information is provided for the client to load the extensions.
+    /// 
+    /// This extension is experimental while the final design of extension loading is decided.
+    /// </remarks>
+    [Experimental("CTASPIRE002", UrlFormat = "https://aka.ms/communitytoolkit/aspire/diagnostics#{0}")]
+    public static IResourceBuilder<SqliteResource> WithLocalExtension(this IResourceBuilder<SqliteResource> builder, string extension, string extensionPath)
+    {
+        ArgumentNullException.ThrowIfNull(builder, nameof(builder));
+        ArgumentException.ThrowIfNullOrEmpty(extension, nameof(extension));
+        ArgumentException.ThrowIfNullOrEmpty(extensionPath, nameof(extensionPath));
+
+        builder.Resource.AddExtension(new(extension, PackageName: null, IsNuGetPackage: false, extensionPath));
 
         return builder;
     }

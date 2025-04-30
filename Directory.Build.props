@@ -1,6 +1,4 @@
 <Project>
-  <Import Project="eng\apicompat\PublicApiAnalyzer.props" />
-  <Import Project="eng\apicompat\PublicApiAnalyzer.targets" />
   
   <!-- See https://aka.ms/dotnet/msbuild/customize for more details on customizing your build -->
   <PropertyGroup>
@@ -14,14 +12,14 @@
     <Nullable>enable</Nullable>
 
     <AspireMajorVersion>9</AspireMajorVersion>
-    <AspireVersion>$(AspireMajorVersion).0.0</AspireVersion>
+    <AspireVersion>$(AspireMajorVersion).2.0</AspireVersion>
     <AspireAppHostSdkVersion>$(AspireVersion)</AspireAppHostSdkVersion>
     <AspNetCoreVersion>9.0.0</AspNetCoreVersion>
-    <DotNetExtensionsVersion>9.0.0</DotNetExtensionsVersion>
-    <OpenTelemetryVersion>1.11.0</OpenTelemetryVersion>
-    <TestContainersVersion>4.1.0</TestContainersVersion>
+    <DotNetExtensionsVersion>9.0.4</DotNetExtensionsVersion>
+    <OpenTelemetryVersion>1.11.1</OpenTelemetryVersion>
+    <TestContainersVersion>4.4.0</TestContainersVersion>
+    <MEAIVersion>9.4.0-preview.1.25207.5</MEAIVersion>
     <IsPackable>false</IsPackable>
-    <UsePublicApiAnalyzers>true</UsePublicApiAnalyzers>
 
     <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
     <SharedDir>$(RepoRoot)src\Shared</SharedDir>
@@ -39,8 +37,9 @@
 
   <!-- Versioning -->
   <PropertyGroup>
-    <ToolkitMinorVersion>1</ToolkitMinorVersion>
+    <ToolkitMinorVersion>4</ToolkitMinorVersion>
     <ToolkitPatchVersion>1</ToolkitPatchVersion>
+    <ToolkitPreviewVersion>preview.1</ToolkitPreviewVersion>
 
     <VersionPrefix>$(AspireMajorVersion).$(ToolkitMinorVersion).$(ToolkitPatchVersion)</VersionPrefix>
   </PropertyGroup>

@@ -1,8 +1,17 @@
 name: "Setup Runtimes, Caching, and Tools"
 description: "Setup various runtimes, cache dependencies, and initialize tools"
 inputs:
-  hash-file:
-    description: "The file to hash for caching"
+  name:
+    description: "The name of the project or environment to configure"
+    required: true
+  docker-username:
+    description: "The Docker username"
+    required: true
+  docker-password:
+    description: "The Docker password"
+    required: true
+  docker-registry:
+    description: "The Docker registry"
     required: true
 runs:
   using: "composite"
@@ -27,6 +36,8 @@ runs:
 
     - uses: astral-sh/setup-uv@v5
       name: Install uv
+      with:
+        enable-cache: false
 
     - uses: actions/setup-go@v5
       name: Set up Go
@@ -62,11 +73,6 @@ runs:
       with:
         bun-version: latest
 
-    - uses: dapr/setup-dapr@v2
-      name: Setup Dapr
-      with:
-        version: ${{ env.DAPR_VERSION }}
-
     - uses: actions/cache@v4
       name: Cache NuGet packages
       with:
@@ -74,27 +80,6 @@ runs:
         key: ${{ runner.os }}-nuget-${{ hashFiles('Directory.Packages.props') }}
         restore-keys: |
           ${{ runner.os }}-nuget-
-
-    - uses: actions/cache@v4
-      name: Cache Java Docker images
-      with:
-        path: /var/lib/docker/image
-        key: ${{ runner.os }}-docker-${{ hashFiles('examples/java/CommunityToolkit.Aspire.Hosting.Java.Spring.Maven/Dockerfile') }}
-        restore-keys: |
-          ${{ runner.os }}-docker-
-
-    - name: Get NPM package root
-      id: npm-root
-      run: "echo path=$(npm root -g) >> $GITHUB_OUTPUT"
-      shell: bash
-
-    - uses: actions/cache@v4
-      name: Cache global npm packages
-      with:
-        path: ${{ steps.npm-root.outputs.path }}
-        key: ${{ runner.os }}-npm-${{ hashFiles('${{ inputs.hash-file }}') }}
-        restore-keys: |
-          ${{ runner.os }}-npm-
 
     - uses: Swatinem/rust-cache@v2
       name: Cache Rust packages
@@ -110,14 +95,32 @@ runs:
 
     - name: Setup Node projects
       shell: bash
+      if: ${{ contains(inputs.name, 'StaticWebApps') }}
       run: |
         npm install -g @azure/static-web-apps-cli
         cd examples/swa/CommunityToolkit.Aspire.StaticWebApps.WebApp
         npm ci
 
+    - name: Login to docker
+      uses: docker/login-action@v3
+      # only run if there was a docker-username and password provided
+      # this is because builds from forks will not have access to secrets
+      # and we don't want to fail the workflow if they don't have access to secrets
+      if: ${{ inputs.docker-username != '' && inputs.docker-password != '' }}
+      with:
+        username: ${{ inputs.docker-username }}
+        password: ${{ inputs.docker-password }}
+        registry: ${{ inputs.docker-registry }}
+
+    - uses: dapr/setup-dapr@v2
+      name: Setup Dapr
+      if: ${{ contains(inputs.name, 'Dapr') }}
+      with:
+        version: ${{ env.DAPR_VERSION }}
+
     - name: Init Dapr
       shell: bash
-      if: ${{ matrix.os == 'ubuntu-latest' }}
+      if: ${{ matrix.os == 'ubuntu-latest' && contains(inputs.name, 'Dapr') }}
       run: |
         dapr init --runtime-version=${{ env.DAPR_VERSION }}
         dapr --version

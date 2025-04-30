@@ -1,9 +1,8 @@
-using Aspire;
 using CommunityToolkit.Aspire.OllamaSharp;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using OllamaSharp;
 using System.Data.Common;
 
@@ -14,7 +13,7 @@ namespace Microsoft.Extensions.Hosting;
 /// </summary>
 public static class AspireOllamaSharpExtensions
 {
-    private const string DefaultConfigSectionName = "Aspire:OllamaSharp";
+    internal const string DefaultConfigSectionName = "Aspire:OllamaSharp";
 
     /// <summary>
     /// Adds <see cref="IOllamaApiClient"/> services to the container.
@@ -23,11 +22,11 @@ public static class AspireOllamaSharpExtensions
     /// <param name="connectionName">A name used to retrieve the connection string from the ConnectionStrings configuration section.</param>
     /// <param name="configureSettings">An optional delegate that can be used for customizing options. It's invoked after the settings are read from the configuration.</param>
     /// <exception cref="UriFormatException">Thrown when no Ollama endpoint is provided.</exception>
-    public static void AddOllamaApiClient(this IHostApplicationBuilder builder, string connectionName, Action<OllamaSharpSettings>? configureSettings = null)
+    public static AspireOllamaApiClientBuilder AddOllamaApiClient(this IHostApplicationBuilder builder, string connectionName, Action<OllamaSharpSettings>? configureSettings = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionName, nameof(connectionName));
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
-        AddOllamaClientInternal(builder, DefaultConfigSectionName, connectionName, configureSettings: configureSettings);
+        return AddOllamaClientInternal(builder, DefaultConfigSectionName, connectionName, configureSettings: configureSettings);
     }
 
     /// <summary>
@@ -37,11 +36,11 @@ public static class AspireOllamaSharpExtensions
     /// <param name="connectionName">A name used to retrieve the connection string from the ConnectionStrings configuration section.</param>
     /// <param name="configureSettings">An optional delegate that can be used for customizing options. It's invoked after the settings are read from the configuration.</param>
     /// <exception cref="UriFormatException">Thrown when no Ollama endpoint is provided.</exception>
-    public static void AddKeyedOllamaApiClient(this IHostApplicationBuilder builder, string connectionName, Action<OllamaSharpSettings>? configureSettings = null)
+    public static AspireOllamaApiClientBuilder AddKeyedOllamaApiClient(this IHostApplicationBuilder builder, string connectionName, Action<OllamaSharpSettings>? configureSettings = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(connectionName, nameof(connectionName));
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
-        AddOllamaClientInternal(builder, $"{DefaultConfigSectionName}:{connectionName}", connectionName, serviceKey: connectionName, configureSettings: configureSettings);
+        return AddOllamaClientInternal(builder, $"{DefaultConfigSectionName}:{connectionName}", connectionName, serviceKey: connectionName, configureSettings: configureSettings);
     }
 
     /// <summary>
@@ -51,6 +50,7 @@ public static class AspireOllamaSharpExtensions
     /// <param name="connectionName">A name used to retrieve the connection string from the ConnectionStrings configuration section.</param>
     /// <param name="configureSettings">An optional delegate that can be used for customizing options. It's invoked after the settings are read from the configuration.</param>
     /// <exception cref="InvalidOperationException">Thrown when no Ollama endpoint is provided.</exception>
+    [Obsolete("This approach to registering IChatClient is deprecated, use AddOllamaApiClient().AddChatClient() instead.")]
     public static void AddOllamaSharpChatClient(this IHostApplicationBuilder builder, string connectionName, Action<OllamaSharpSettings>? configureSettings = null)
     {
         builder.AddKeyedOllamaApiClient(connectionName, configureSettings);
@@ -65,6 +65,7 @@ public static class AspireOllamaSharpExtensions
     /// <param name="connectionName">A name used to retrieve the connection string from the ConnectionStrings configuration section.</param>
     /// <param name="configureSettings">An optional delegate that can be used for customizing options. It's invoked after the settings are read from the configuration.</param>
     /// <exception cref="InvalidOperationException">Thrown when no Ollama endpoint is provided.</exception>
+    [Obsolete("This approach to registering IChatClient is deprecated, use AddKeyedOllamaApiClient().AddChatClient() instead.")]
     public static void AddKeyedOllamaSharpChatClient(this IHostApplicationBuilder builder, string connectionName, Action<OllamaSharpSettings>? configureSettings = null)
     {
         builder.AddKeyedOllamaApiClient(connectionName, configureSettings);
@@ -78,6 +79,7 @@ public static class AspireOllamaSharpExtensions
     /// <param name="connectionName">A name used to retrieve the connection string from the ConnectionStrings configuration section.</param>
     /// <param name="configureSettings">An optional delegate that can be used for customizing options. It's invoked after the settings are read from the configuration.</param>
     /// <exception cref="InvalidOperationException">Thrown when no Ollama endpoint is provided.</exception>
+    [Obsolete("This approach to registering IEmbeddingGenerator is deprecated, use AddOllamaApiClient().AddEmbeddingGenerator() instead.")]
     public static void AddOllamaSharpEmbeddingGenerator(this IHostApplicationBuilder builder, string connectionName, Action<OllamaSharpSettings>? configureSettings = null)
     {
         builder.AddKeyedOllamaSharpChatClient(connectionName, configureSettings);
@@ -92,13 +94,14 @@ public static class AspireOllamaSharpExtensions
     /// <param name="connectionName">A name used to retrieve the connection string from the ConnectionStrings configuration section.</param>
     /// <param name="configureSettings">An optional delegate that can be used for customizing options. It's invoked after the settings are read from the configuration.</param>
     /// <exception cref="InvalidOperationException">Thrown when no Ollama endpoint is provided.</exception>
+    [Obsolete("This approach to registering IEmbeddingGenerator is deprecated, use AddKeyedOllamaApiClient().AddEmbeddingGenerator() instead.")]
     public static void AddKeyedOllamaSharpEmbeddingGenerator(this IHostApplicationBuilder builder, string connectionName, Action<OllamaSharpSettings>? configureSettings = null)
     {
         builder.AddKeyedOllamaSharpChatClient(connectionName, configureSettings);
         builder.Services.AddKeyedSingleton(connectionName, (sp, _) => ConfigureOllamaEmbeddingGenerator<string, Embedding<float>>(sp, connectionName));
     }
 
-    private static void AddOllamaClientInternal(
+    private static AspireOllamaApiClientBuilder AddOllamaClientInternal(
         IHostApplicationBuilder builder,
         string configurationSectionName,
         string connectionName,
@@ -128,6 +131,23 @@ public static class AspireOllamaSharpExtensions
 
         configureSettings?.Invoke(settings);
 
+        string httpClientKey = $"{connectionName}_httpClient";
+
+        builder.Services.AddHttpClient(httpClientKey, client =>
+        {
+            if (settings.Endpoint is not null)
+            {
+                client.BaseAddress = settings.Endpoint;
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"An OllamaApiClient could not be configured. Ensure valid connection information was provided in 'ConnectionStrings:{connectionName}' or either " +
+                    $"{nameof(settings.Endpoint)} must be provided " +
+                    $"in the '{configurationSectionName}' configuration section.");
+            }
+        });
+
         if (serviceKey is not null)
         {
             builder.Services.AddKeyedSingleton(serviceKey, (sp, _) => ConfigureOllamaClient(sp));
@@ -135,29 +155,29 @@ public static class AspireOllamaSharpExtensions
         else
         {
             builder.Services.AddSingleton(ConfigureOllamaClient);
+
+            serviceKey = $"{connectionName}_OllamaApiClient_internal";
+            builder.Services.AddKeyedSingleton(serviceKey, (sp, _) => ConfigureOllamaClient(sp));
         }
+
+        return new AspireOllamaApiClientBuilder(builder, serviceKey, settings.DisableTracing);
 
         IOllamaApiClient ConfigureOllamaClient(IServiceProvider serviceProvider)
         {
-            if (settings.Endpoint is not null)
-            {
-                var client = new OllamaApiClient(new HttpClient { BaseAddress = settings.Endpoint });
-                if (!string.IsNullOrWhiteSpace(settings.SelectedModel))
-                {
-                    client.SelectedModel = settings.SelectedModel;
-                    client.Config.Model = settings.SelectedModel;
-                }
+            HttpClient httpClient = serviceProvider.GetRequiredService<IHttpClientFactory>().CreateClient(httpClientKey);
 
-                return client;
+            OllamaApiClient client = new(httpClient);
+            if (!string.IsNullOrWhiteSpace(settings.SelectedModel))
+            {
+                client.SelectedModel = settings.SelectedModel;
+                client.Config.Model = settings.SelectedModel;
             }
 
-            throw new InvalidOperationException(
-                        $"An OllamaApiClient could not be configured. Ensure valid connection information was provided in 'ConnectionStrings:{connectionName}' or either " +
-                        $"{nameof(settings.Endpoint)} must be provided " +
-                        $"in the '{configurationSectionName}' configuration section.");
+            return client;
         }
     }
 
+    [Obsolete]
     private static IChatClient ConfigureOllamaChatClient(IServiceProvider serviceProvider, string serviceKey)
     {
         var ollamaClient = serviceProvider.GetRequiredKeyedService<IOllamaApiClient>(serviceKey);
@@ -169,6 +189,7 @@ public static class AspireOllamaSharpExtensions
         throw new InvalidOperationException("The Ollama client does not implement IChatClient.");
     }
 
+    [Obsolete]
     private static IEmbeddingGenerator<TInput, TEmbedding> ConfigureOllamaEmbeddingGenerator<TInput, TEmbedding>(IServiceProvider serviceProvider, string serviceKey)
         where TEmbedding : Embedding
     {

@@ -68,7 +68,6 @@ public static partial class OllamaResourceBuilderExtensions
         return builder.AddResource(resource)
           .WithAnnotation(new ContainerImageAnnotation { Image = OllamaContainerImageTags.Image, Tag = OllamaContainerImageTags.Tag, Registry = OllamaContainerImageTags.Registry })
           .WithHttpEndpoint(port: port, targetPort: 11434, name: OllamaResource.OllamaEndpointName)
-          .WithOtlpExporter()
           .WithHttpHealthCheck("/")
           .ExcludeFromManifest();
     }
@@ -84,9 +83,7 @@ public static partial class OllamaResourceBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
-#pragma warning disable CTASPIRE001
-        return builder.WithVolume(name ?? VolumeNameGenerator.CreateVolumeName(builder, "ollama"), "/root/.ollama", isReadOnly);
-#pragma warning restore CTASPIRE001
+        return builder.WithVolume(name ?? VolumeNameGenerator.Generate(builder, "ollama"), "/root/.ollama", isReadOnly);
     }
 
     /// <summary>

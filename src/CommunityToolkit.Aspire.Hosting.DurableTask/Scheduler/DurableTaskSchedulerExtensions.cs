@@ -212,8 +212,11 @@ public static class DurableTaskSchedulerExtensions
 
                     return CommandResults.Success();
                 },
-                iconName: "GlobeArrowForward",
-                isHighlighted: isTaskHub);
+                new()
+                {
+                    IconName = "GlobeArrowForward",
+                    IsHighlighted = isTaskHub
+                });
         }
 
         return builder;
