@@ -9,13 +9,9 @@ namespace CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
 public sealed class DurableTaskSchedulerEmulatorResource(DurableTaskSchedulerResource innerResource)
     : ContainerResource(innerResource.Name), IResource
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <inheritdoc />
     public override ResourceAnnotationCollection Annotations => innerResource.Annotations;
 
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <inheritdoc />
     public override string Name => innerResource.Name;
 }

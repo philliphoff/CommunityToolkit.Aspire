@@ -48,28 +48,26 @@ public static class DurableTaskSchedulerExtensions
         builder
             .WithEndpoint(name: Constants.Scheduler.Emulator.Endpoints.Worker, scheme: "http", targetPort: 8080)
             .WithEndpoint(name: Constants.Scheduler.Emulator.Endpoints.Dashboard, scheme: "http", targetPort: 8082)
-            .WithAnnotation(new ContainerRuntimeArgsCallbackAnnotation(
-                args =>
-                {
-                    args.Add("--label");
-                    args.Add("com.microsoft.tooling=aspire");
-
-                    var taskHubNames =
-                        builder
-                            .ApplicationBuilder
-                            .Resources
-                            .OfType<DurableTaskHubResource>()
-                            .Where(r => r.Parent == builder.Resource)
-                            .Select(r => r.TaskHubName ?? r.Name)
-                            .Distinct()
-                            .ToList();
-
-                    if (taskHubNames.Any())
+            .WithAnnotation(
+                new EnvironmentCallbackAnnotation(
+                    (EnvironmentCallbackContext context) =>
                     {
-                        args.Add("--env");
-                        args.Add($"DTS_TASK_HUB_NAMES={String.Join(",", taskHubNames)}");
-                    }
-                }))
+                        var taskHubNames =
+                            builder
+                                .ApplicationBuilder
+                                .Resources
+                                .OfType<DurableTaskHubResource>()
+                                .Where(r => r.Parent == builder.Resource)
+                                .Select(r => r.TaskHubName ?? r.Name)
+                                .Distinct()
+                                .ToList();
+
+                        if (taskHubNames.Any())
+                        {
+                            context.EnvironmentVariables.Add("DTS_TASK_HUB_NAMES", String.Join(",", taskHubNames));
+                        }
+                    })
+            )
             .WithAnnotation(
                 new ContainerImageAnnotation
                 {
