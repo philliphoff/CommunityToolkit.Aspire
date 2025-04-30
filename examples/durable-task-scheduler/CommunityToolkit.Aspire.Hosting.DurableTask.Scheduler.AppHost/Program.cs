@@ -5,7 +5,7 @@ var scheduler =
            .RunAsEmulator(
                 options =>
                 {
-                    options.WithImage("mcr.microsoft.com/durable-task/dts-emulator", "latest-linux-arm64");
+                    options.WithImage("mcr.microsoft.com/dts/dts-emulator", "v0.0.6");
                 });
 
 var taskHub = scheduler.AddTaskHub("taskhub");

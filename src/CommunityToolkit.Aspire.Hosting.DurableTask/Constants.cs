@@ -15,12 +15,9 @@ static class Constants
         {
             public static class Container
             {
-                public const string Image = "mcr.microsoft.com/durable-task/dts-emulator";
+                public const string Image = "mcr.microsoft.com/dts/dts-emulator";
 
-                public static string Tag =>
-                    RuntimeInformation.OSArchitecture == Architecture.Arm64
-                        ? "latest-arm64"
-                        : "latest-amd64";
+                public static string Tag => "v0.0.6";
             }
 
             public static class Endpoints
