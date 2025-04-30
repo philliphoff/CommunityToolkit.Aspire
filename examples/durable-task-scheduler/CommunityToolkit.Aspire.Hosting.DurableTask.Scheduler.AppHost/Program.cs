@@ -5,6 +5,8 @@ var scheduler =
            .RunAsEmulator(
                 options =>
                 {
+                    options.Resource.UseDynamicTaskHubs = true;
+
                     options.WithImage("mcr.microsoft.com/dts/dts-emulator", "v0.0.6");
                 });
 

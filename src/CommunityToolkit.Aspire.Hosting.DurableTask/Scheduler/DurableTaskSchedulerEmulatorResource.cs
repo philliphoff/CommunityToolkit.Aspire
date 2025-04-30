@@ -14,4 +14,9 @@ public sealed class DurableTaskSchedulerEmulatorResource(DurableTaskSchedulerRes
 
     /// <inheritdoc />
     public override string Name => innerResource.Name;
+
+    /// <summary>
+    /// Gets or sets whether the emulator should use dynamic task hubs.
+    /// </summary>
+    public bool UseDynamicTaskHubs { get; set; }
 }

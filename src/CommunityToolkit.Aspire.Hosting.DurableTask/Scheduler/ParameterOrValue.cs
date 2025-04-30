@@ -2,14 +2,14 @@ using Aspire.Hosting.ApplicationModel;
 
 namespace CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
 
-sealed class ParameterWrapper(object? parameter) : IValueProvider, IManifestExpressionProvider
+sealed class ParameterOrValue(object? parameter) : IValueProvider, IManifestExpressionProvider
 {
-    public static ParameterWrapper Create(IValueProvider? parameter)
+    public static ParameterOrValue Create(IValueProvider? parameter)
     {
         return new(parameter);
     }
 
-    public static ParameterWrapper Create(object? parameter)
+    public static ParameterOrValue Create(object? parameter)
     {
         return new(parameter);
     }

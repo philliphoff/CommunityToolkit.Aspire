@@ -9,26 +9,26 @@ namespace CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
 /// <param name="subscriptionId"></param>
 /// <param name="schedulerEndpoint"></param>
 /// <param name="dashboardEndpoint"></param>
-sealed class ExistingDurableTaskSchedulerAnnotation(ParameterWrapper name, ParameterWrapper subscriptionId, ParameterWrapper schedulerEndpoint, ParameterWrapper? dashboardEndpoint) : IResourceAnnotation
+sealed class ExistingDurableTaskSchedulerAnnotation(ParameterOrValue name, ParameterOrValue subscriptionId, ParameterOrValue schedulerEndpoint, ParameterOrValue? dashboardEndpoint) : IResourceAnnotation
 {
     /// <summary>
     /// 
     /// </summary>
-    public ParameterWrapper DashboardEndpoint => dashboardEndpoint ?? ParameterWrapper.Create(Constants.Scheduler.Dashboard.Endpoint);
+    public ParameterOrValue DashboardEndpoint => dashboardEndpoint ?? ParameterOrValue.Create(Constants.Scheduler.Dashboard.Endpoint);
 
     /// <summary>
     ///
     /// 
     /// </summary>
-    public ParameterWrapper Name => name;
+    public ParameterOrValue Name => name;
 
     /// <summary>
     /// 
     /// </summary>
-    public ParameterWrapper SchedulerEndpoint => schedulerEndpoint;
+    public ParameterOrValue SchedulerEndpoint => schedulerEndpoint;
 
     /// <summary>
     /// 
     /// </summary>
-    public ParameterWrapper SubscriptionId => subscriptionId;
+    public ParameterOrValue SubscriptionId => subscriptionId;
 }

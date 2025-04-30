@@ -82,6 +82,17 @@ public static class DurableTaskSchedulerExtensions
             var surrogateBuilder = builder.ApplicationBuilder.CreateResourceBuilder(surrogate);
 
             configureContainer(surrogateBuilder);
+
+            if (surrogate.UseDynamicTaskHubs)
+            {
+                builder.WithAnnotation(
+                    new EnvironmentCallbackAnnotation(
+                        (EnvironmentCallbackContext context) =>
+                        {
+                            context.EnvironmentVariables.Add("DTS_USE_DYNAMIC_TASK_HUBS", "true");
+                        })
+                );
+            }
         }
 
         return builder;
@@ -114,10 +125,10 @@ public static class DurableTaskSchedulerExtensions
         if (!builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
         {
             builder.WithAnnotation(new ExistingDurableTaskSchedulerAnnotation(
-                ParameterWrapper.Create(name),
-                ParameterWrapper.Create(subscriptionId),
-                ParameterWrapper.Create(schedulerEndpoint),
-                dashboardEndpoint is not null ? ParameterWrapper.Create(dashboardEndpoint) : null));
+                ParameterOrValue.Create(name),
+                ParameterOrValue.Create(subscriptionId),
+                ParameterOrValue.Create(schedulerEndpoint),
+                dashboardEndpoint is not null ? ParameterOrValue.Create(dashboardEndpoint) : null));
             
             builder.Resource.Authentication = DurableTaskSchedulerAuthentication.Default;
         }
@@ -152,10 +163,10 @@ public static class DurableTaskSchedulerExtensions
         if (!builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
         {
             builder.WithAnnotation(new ExistingDurableTaskSchedulerAnnotation(
-                ParameterWrapper.Create(name.Resource),
-                ParameterWrapper.Create(subscriptionId.Resource),
-                ParameterWrapper.Create(schedulerEndpoint.Resource),
-                dashboardEndpoint is not null ? ParameterWrapper.Create(dashboardEndpoint.Resource) : null));
+                ParameterOrValue.Create(name.Resource),
+                ParameterOrValue.Create(subscriptionId.Resource),
+                ParameterOrValue.Create(schedulerEndpoint.Resource),
+                dashboardEndpoint is not null ? ParameterOrValue.Create(dashboardEndpoint.Resource) : null));
 
             builder.Resource.Authentication = DurableTaskSchedulerAuthentication.Default;
         }
