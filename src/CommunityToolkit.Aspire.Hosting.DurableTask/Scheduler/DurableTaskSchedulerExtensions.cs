@@ -53,6 +53,22 @@ public static class DurableTaskSchedulerExtensions
                 {
                     args.Add("--label");
                     args.Add("com.microsoft.tooling=aspire");
+
+                    var taskHubNames =
+                        builder
+                            .ApplicationBuilder
+                            .Resources
+                            .OfType<DurableTaskHubResource>()
+                            .Where(r => r.Parent == builder.Resource)
+                            .Select(r => r.TaskHubName ?? r.Name)
+                            .Distinct()
+                            .ToList();
+
+                    if (taskHubNames.Any())
+                    {
+                        args.Add("--env");
+                        args.Add($"DTS_TASK_HUB_NAMES={String.Join(",", taskHubNames)}");
+                    }
                 }))
             .WithAnnotation(
                 new ContainerImageAnnotation

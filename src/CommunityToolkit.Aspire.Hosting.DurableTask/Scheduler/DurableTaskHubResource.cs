@@ -44,11 +44,6 @@ public class DurableTaskHubResource(string name, DurableTaskSchedulerResource pa
             return TaskHubName;
         }
 
-        if (this.Parent.IsEmulator)
-        {
-            return Constants.Scheduler.TaskHub.DefaultName;
-        }
-
         return this.Name;
     }
 }
