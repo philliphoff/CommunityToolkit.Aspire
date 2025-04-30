@@ -21,4 +21,86 @@ public class AddDurableTaskSchedulerTests
             model.Resources,
             r => r is DurableTaskSchedulerResource);
     }
+
+    const string TestAuthentication = "TestAuthentication";
+    const string TestClientId = "TestClientId";
+    static readonly Uri TestDashboardEndpoint = new Uri("https://dashboard.test.io");
+    static readonly Uri TestSchedulerEndpoint = new Uri("https://scheduler.test.io");
+    const string TestSchedulerName = "TestSchedulerName";
+    const string TestSubscriptionId = "TestSubscriptionId";
+    const string TestTaskHubName = "TestTaskHubName";
+
+    [Fact]
+    public async Task AddDurableTaskSchedulerWithOptions()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+
+        builder.AddDurableTaskScheduler(
+            "scheduler",
+            options =>
+            {
+                options.Resource.Authentication = TestAuthentication;
+                options.Resource.ClientId = TestClientId;
+                options.Resource.DashboardEndpoint = TestDashboardEndpoint;
+                options.Resource.SchedulerEndpoint = TestSchedulerEndpoint;
+                options.Resource.SchedulerName = TestSchedulerName;
+                options.Resource.SubscriptionId = TestSubscriptionId;
+            });
+
+        using var app = builder.Build();
+
+        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
+
+        var resource = model.Resources.Single();
+
+        Assert.NotNull(resource);
+
+        Assert.IsType<DurableTaskSchedulerResource>(resource);
+
+        var scheduler = (DurableTaskSchedulerResource)resource;
+
+        Assert.False(scheduler.IsEmulator);
+
+        Assert.Equal(TestAuthentication, scheduler.Authentication);
+        Assert.Equal(TestClientId, scheduler.ClientId);
+        Assert.Equal(TestDashboardEndpoint, scheduler.DashboardEndpoint);
+        Assert.Equal(TestSchedulerEndpoint, scheduler.SchedulerEndpoint);
+        Assert.Equal(TestSchedulerName, scheduler.SchedulerName);
+        Assert.Equal(TestSubscriptionId, scheduler.SubscriptionId);
+
+        Assert.NotNull(scheduler.SubscriptionIdExpression);
+        Assert.Equal(TestSubscriptionId, await scheduler.SubscriptionIdExpression.GetValueAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task AddDurableTaskSchedulerWithRunExisting()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+
+        builder
+            .AddDurableTaskScheduler(
+            "scheduler")
+            .RunAsExisting(
+                "scheduler-name",
+                "subscription-id",
+                "scheduler-endpoint",
+                "dashboard-endpoint");
+
+        using var app = builder.Build();
+
+        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
+
+        var resource = model.Resources.Single();
+
+        Assert.NotNull(resource);
+
+        Assert.IsType<DurableTaskSchedulerResource>(resource);
+
+        var scheduler = (DurableTaskSchedulerResource)resource;
+
+        Assert.False(scheduler.IsEmulator);
+
+        Assert.NotNull(scheduler.SubscriptionIdExpression);
+        Assert.Equal("subscription-id", await scheduler.SubscriptionIdExpression.GetValueAsync(CancellationToken.None));
+    }
 }
