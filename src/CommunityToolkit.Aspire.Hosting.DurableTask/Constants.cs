@@ -15,8 +15,10 @@ static class Constants
         {
             public static class Container
             {
+                /// <remarks>mcr.microsoft.com/dts/dts-emulator</remarks>
                 public const string Image = "mcr.microsoft.com/dts/dts-emulator";
 
+                /// <remarks>v0.0.6</remarks>
                 public static string Tag => "v0.0.6";
             }
 

@@ -5,9 +5,9 @@ var scheduler =
            .RunAsEmulator(
                 options =>
                 {
-                    options.Resource.UseDynamicTaskHubs = true;
-
-                    options.WithLifetime(ContainerLifetime.Persistent);
+                    options
+                        .WithDynamicTaskHubs()
+                        .WithLifetime(ContainerLifetime.Persistent);
                 });
 
 var taskHub = scheduler.AddTaskHub("taskhub");

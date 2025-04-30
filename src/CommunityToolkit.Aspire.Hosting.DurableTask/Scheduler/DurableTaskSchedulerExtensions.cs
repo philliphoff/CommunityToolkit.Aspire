@@ -6,18 +6,18 @@ using System.Diagnostics;
 namespace Aspire.Hosting;
 
 /// <summary>
-/// 
+/// Provides extension methods for adding and configuring Durable Task Scheduler resources to the application model.
 /// </summary>
 public static class DurableTaskSchedulerExtensions
 {
     /// <summary>
-    /// 
+    /// Adds a Durable Task Scheduler resource to the application model.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="name"></param>
-    /// <param name="configure"></param>
-    /// <returns></returns>
-    public static IResourceBuilder<DurableTaskSchedulerResource> AddDurableTaskScheduler(this IDistributedApplicationBuilder builder, string name, Action<IResourceBuilder<DurableTaskSchedulerResource>>? configure = null)
+    /// <param name="builder">The builder for the distributed application.</param>
+    /// <param name="name">The name of the resource.</param>
+    /// <param name="configure">(Optional) Callback that exposes the resource allowing for customization.</param>
+    /// <returns>A reference to the <see cref="IResourceBuilder{DurableTaskSchedulerResource}" />.</returns>
+    public static IResourceBuilder<DurableTaskSchedulerResource> AddDurableTaskScheduler(this IDistributedApplicationBuilder builder, [ResourceName] string name, Action<IResourceBuilder<DurableTaskSchedulerResource>>? configure = null)
     {
         DurableTaskSchedulerResource resource = new(name);
 
@@ -31,11 +31,14 @@ public static class DurableTaskSchedulerExtensions
     }
 
     /// <summary>
-    /// 
+    /// Configures a Durable Task Scheduler resource to be emulated.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="configureContainer"></param>
-    /// <returns></returns>
+    /// <param name="builder">The Durable Task Scheduler resource builder.</param>
+    /// <param name="configureContainer">Callback that exposes the underlying container used for emulation allowing for customization.</param>
+    /// <returns>A reference to the <see cref="IResourceBuilder{DurableTaskSchedulerResource}" />.</returns>
+    /// <remarks>
+    /// This version of the package defaults to the <inheritdoc cref="Constants.Scheduler.Emulator.Container.Tag" /> tag of the <inheritdoc cref="Constants.Scheduler.Emulator.Container.Image" /> container image.
+    /// </remarks>
     public static IResourceBuilder<DurableTaskSchedulerResource> RunAsEmulator(this IResourceBuilder<DurableTaskSchedulerResource> builder, Action<IResourceBuilder<DurableTaskSchedulerEmulatorResource>>? configureContainer = null)
     {
         if (builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
@@ -97,28 +100,15 @@ public static class DurableTaskSchedulerExtensions
     }
 
     /// <summary>
-    /// 
+    /// Marks the resource as an existing Durable Task Scheduler instance when the application is running.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="name"></param>
-    /// <param name="subscriptionId"></param>
-    /// <param name="schedulerEndpoint"></param>
-    /// <returns></returns>
-    public static IResourceBuilder<DurableTaskSchedulerResource> RunAsExisting(this IResourceBuilder<DurableTaskSchedulerResource> builder, string name, string subscriptionId, string schedulerEndpoint)
-    {
-        return RunAsExisting(builder, name, subscriptionId, schedulerEndpoint, null);
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="name"></param>
-    /// <param name="subscriptionId"></param>
-    /// <param name="schedulerEndpoint"></param>
-    /// <param name="dashboardEndpoint"></param>
-    /// <returns></returns>
-    public static IResourceBuilder<DurableTaskSchedulerResource> RunAsExisting(this IResourceBuilder<DurableTaskSchedulerResource> builder, string name, string subscriptionId, string schedulerEndpoint, string? dashboardEndpoint)
+    /// <param name="builder">The Durable Task Scheduler resource builder.</param>
+    /// <param name="name">The name of the Durable Task Scheduler instance.</param>
+    /// <param name="subscriptionId">The ID of the Azure subscription in which the Durable Task Scheduler instance resides.</param>
+    /// <param name="schedulerEndpoint">The endpoint of the Durable Task Scheduler instance.</param>
+    /// <param name="dashboardEndpoint">(Optional) The endpoint of the dashboard for the Durable Task Scheduler instance.</param>
+    /// <returns>A reference to the <see cref="IResourceBuilder{DurableTaskSchedulerResource}" />.</returns>
+    public static IResourceBuilder<DurableTaskSchedulerResource> RunAsExisting(this IResourceBuilder<DurableTaskSchedulerResource> builder, string name, string subscriptionId, string schedulerEndpoint, string? dashboardEndpoint = null)
     {
         if (!builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
         {
@@ -133,30 +123,17 @@ public static class DurableTaskSchedulerExtensions
 
         return builder;
     }
-
+   
     /// <summary>
-    /// 
+    /// Marks the resource as an existing Durable Task Scheduler instance when the application is running.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="name"></param>
-    /// <param name="subscriptionId"></param>
-    /// <param name="schedulerEndpoint"></param>
-    /// <returns></returns>
-    public static IResourceBuilder<DurableTaskSchedulerResource> RunAsExisting(this IResourceBuilder<DurableTaskSchedulerResource> builder, IResourceBuilder<ParameterResource> name, IResourceBuilder<ParameterResource> subscriptionId, IResourceBuilder<ParameterResource> schedulerEndpoint)
-    {
-        return RunAsExisting(builder, name, subscriptionId, schedulerEndpoint, null);
-    }
-    
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="name"></param>
-    /// <param name="subscriptionId"></param>
-    /// <param name="schedulerEndpoint"></param>
-    /// <param name="dashboardEndpoint"></param>
-    /// <returns></returns>
-    public static IResourceBuilder<DurableTaskSchedulerResource> RunAsExisting(this IResourceBuilder<DurableTaskSchedulerResource> builder, IResourceBuilder<ParameterResource> name, IResourceBuilder<ParameterResource> subscriptionId, IResourceBuilder<ParameterResource> schedulerEndpoint, IResourceBuilder<ParameterResource>? dashboardEndpoint)
+    /// <param name="builder">The Durable Task Scheduler resource builder.</param>
+    /// <param name="name">The name of the Durable Task Scheduler instance.</param>
+    /// <param name="subscriptionId">The ID of the Azure subscription in which the Durable Task Scheduler instance resides.</param>
+    /// <param name="schedulerEndpoint">The endpoint of the Durable Task Scheduler instance.</param>
+    /// <param name="dashboardEndpoint">(Optional) The endpoint of the dashboard for the Durable Task Scheduler instance.</param>
+    /// <returns>A reference to the <see cref="IResourceBuilder{DurableTaskSchedulerResource}" />.</returns>
+    public static IResourceBuilder<DurableTaskSchedulerResource> RunAsExisting(this IResourceBuilder<DurableTaskSchedulerResource> builder, IResourceBuilder<ParameterResource> name, IResourceBuilder<ParameterResource> subscriptionId, IResourceBuilder<ParameterResource> schedulerEndpoint, IResourceBuilder<ParameterResource>? dashboardEndpoint = null)
     {
         if (!builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
         {
@@ -173,13 +150,13 @@ public static class DurableTaskSchedulerExtensions
     }
 
     /// <summary>
-    /// 
+    /// Adds a Durable Task Scheduler task hub resource to the application model.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="name"></param>
-    /// <param name="configure"></param>
-    /// <returns></returns>
-    public static IResourceBuilder<DurableTaskHubResource> AddTaskHub(this IResourceBuilder<DurableTaskSchedulerResource> builder, string name, Action<IResourceBuilder<DurableTaskHubResource>>? configure = null)
+    /// <param name="builder">The Durable Task Scheduler resource builder.</param>
+    /// <param name="name">The name of the resource.</param>
+    /// <param name="configure">(Optional) Callback that exposes the resource allowing for customization.</param>
+    /// <returns>A reference to the <see cref="IResourceBuilder{DurableTaskHubResource}" />.</returns>
+    public static IResourceBuilder<DurableTaskHubResource> AddTaskHub(this IResourceBuilder<DurableTaskSchedulerResource> builder, [ResourceName] string name, Action<IResourceBuilder<DurableTaskHubResource>>? configure = null)
     {
         DurableTaskHubResource taskHubResource = new(name, builder.Resource);
 
@@ -193,11 +170,11 @@ public static class DurableTaskSchedulerExtensions
     }
 
     /// <summary>
-    /// 
+    /// Sets the name of the task hub if different from the resource name.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="name"></param>
-    /// <returns></returns>
+    /// <param name="builder">The Durable Task Scheduler task hub resource builder.</param>
+    /// <param name="name">The name of the task hub.</param>
+    /// <returns>A reference to the <see cref="IResourceBuilder{DurableTaskHubResource}" />.</returns>
     public static IResourceBuilder<DurableTaskHubResource> WithTaskHubName(this IResourceBuilder<DurableTaskHubResource> builder, string name)
     {
         builder.Resource.TaskHubName = name;
@@ -206,11 +183,11 @@ public static class DurableTaskSchedulerExtensions
     }
 
     /// <summary>
-    /// 
+    /// Sets the name of the task hub if different from the resource name.
     /// </summary>
-    /// <param name="builder"></param>
-    /// <param name="name"></param>
-    /// <returns></returns>
+    /// <param name="builder">The Durable Task Scheduler task hub resource builder.</param>
+    /// <param name="name">The name of the task hub.</param>
+    /// <returns>A reference to the <see cref="IResourceBuilder{DurableTaskHubResource}" />.</returns>
     public static IResourceBuilder<DurableTaskHubResource> WithTaskHubName(this IResourceBuilder<DurableTaskHubResource> builder, IResourceBuilder<ParameterResource> name)
     {
         builder.Resource.TaskHubName = name.Resource.Value;
@@ -218,6 +195,25 @@ public static class DurableTaskSchedulerExtensions
         return builder;
     }
     
+    /// <summary>
+    /// Enables the use of dynamic task hubs for the emulator.
+    /// </summary>
+    /// <param name="builder">The Durable Task Scheduler emulator resource builder.</param>
+    /// <returns>A reference to the <see cref="IResourceBuilder{DurableTaskSchedulerEmulatorResource}" />.</returns>
+    /// <remarks>
+    /// Using dynamic task hubs eliminates the requirement that they be pre-defined,
+    /// which can be useful when the same emulator instance is used across sessions.
+    /// </remarks>
+    public static IResourceBuilder<DurableTaskSchedulerEmulatorResource> WithDynamicTaskHubs(this IResourceBuilder<DurableTaskSchedulerEmulatorResource> builder)
+    {
+        if (!builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
+        {
+            builder.Resource.UseDynamicTaskHubs = true;
+        }
+
+        return builder;
+    }
+
     static IResourceBuilder<T> WithOpenDashboardCommand<T>(this IResourceBuilder<T> builder) where T : IResourceWithDashboard
     {
         if (!builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
