@@ -2,7 +2,9 @@ using Aspire.Hosting.ApplicationModel;
 
 namespace CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
 
-internal interface IResourceWithDashboard : IResource
+interface IResourceWithDashboard : IResource
 {
     ReferenceExpression DashboardEndpointExpression { get; }
+
+    bool IsTaskHub => false;
 }

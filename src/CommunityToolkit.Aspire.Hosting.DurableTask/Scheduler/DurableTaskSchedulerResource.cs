@@ -4,22 +4,26 @@ using Aspire.Hosting.ApplicationModel;
 namespace CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
 
 /// <summary>
-/// 
+/// Represents a Durable Task Scheduler resource.
 /// </summary>
-/// <param name="name"></param>
+/// <param name="name">The name of the resource.</param>
 public sealed class DurableTaskSchedulerResource(string name)
     : Resource(name), IResourceWithConnectionString, IResourceWithEndpoints, IResourceWithDashboard
 {
-    private EndpointReference EmulatorDashboardEndpoint => new(this, Constants.Scheduler.Emulator.Endpoints.Dashboard);
-    private EndpointReference EmulatorSchedulerEndpoint => new(this, Constants.Scheduler.Emulator.Endpoints.Worker);
+    EndpointReference EmulatorDashboardEndpoint => new(this, Constants.Scheduler.Emulator.Endpoints.Dashboard);
+    EndpointReference EmulatorSchedulerEndpoint => new(this, Constants.Scheduler.Emulator.Endpoints.Worker);
 
     /// <summary>
-    /// 
+    /// Gets or sets the authentication type used to access the scheduler.
     /// </summary>
+    /// <remarks>
+    /// The value should be from <see cref="DurableTaskSchedulerAuthentication" />.
+    /// The default value is <see cref="DurableTaskSchedulerAuthentication.None" />.
+    /// </remarks>
     public string? Authentication { get; set; }
 
     /// <summary>
-    /// 
+    /// Gets or sets the client ID used to access the scheduler, when using managed identity for authentication.
     /// </summary>
     public string? ClientId { get; set; }
 
@@ -28,53 +32,36 @@ public sealed class DurableTaskSchedulerResource(string name)
         this.CreateConnectionString();
 
     /// <summary>
-    /// 
+    /// Gets or sets the endpoint used to access the scheduler's dashboard.
     /// </summary>
     public Uri? DashboardEndpoint { get; set; }
 
     /// <summary>
-    /// 
-    /// </summary>
-    public ReferenceExpression DashboardEndpointExpression =>
-        this.CreateDashboardEndpoint();
-
-    /// <summary>
-    /// 
+    /// Gets a value indicating whether the scheduler is running as a local emulator.
     /// </summary>
     public bool IsEmulator => this.IsContainer();
 
     /// <summary>
-    /// 
+    /// Gets or sets the endpoint used by applications to access the scheduler.
     /// </summary>
     public Uri? SchedulerEndpoint { get; set; }
 
     /// <summary>
-    /// 
-    /// </summary>
-    public ReferenceExpression SchedulerEndpointExpression =>
-        this.CreateSchedulerEndpoint();
-
-    /// <summary>
-    /// 
+    /// Gets or sets the name of the scheduler (if different from the resource name).
     /// </summary>
     public string? SchedulerName { get; set; }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public ReferenceExpression? SchedulerNameExpression =>
-        this.ResolveSchedulerName();
+    ReferenceExpression IResourceWithDashboard.DashboardEndpointExpression =>
+        this.CreateDashboardEndpoint();
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public string? SubscriptionId { get; set; }
+    internal ReferenceExpression SchedulerEndpointExpression =>
+        this.CreateSchedulerEndpoint();
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public ReferenceExpression? SubscriptionIdExpression =>
+    internal ReferenceExpression? SubscriptionIdExpression =>
         this.ResolveSubscriptionId();
+
+    internal ReferenceExpression? SchedulerNameExpression =>
+        this.ResolveSchedulerName();
 
     ReferenceExpression? ResolveSubscriptionId()
     {
@@ -83,11 +70,6 @@ public sealed class DurableTaskSchedulerResource(string name)
             return ReferenceExpression.Create($"{annotation.SubscriptionId}");
         }
         
-        if (this.SubscriptionId is not null)
-        {
-            return ReferenceExpression.Create($"{this.SubscriptionId}");
-        }
-
         return null;
     }
     

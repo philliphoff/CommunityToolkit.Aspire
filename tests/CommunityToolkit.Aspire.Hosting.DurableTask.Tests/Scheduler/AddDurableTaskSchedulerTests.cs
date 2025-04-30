@@ -27,8 +27,6 @@ public class AddDurableTaskSchedulerTests
     static readonly Uri TestDashboardEndpoint = new Uri("https://dashboard.test.io");
     static readonly Uri TestSchedulerEndpoint = new Uri("https://scheduler.test.io");
     const string TestSchedulerName = "TestSchedulerName";
-    const string TestSubscriptionId = "TestSubscriptionId";
-    const string TestTaskHubName = "TestTaskHubName";
 
     [Fact]
     public async Task AddDurableTaskSchedulerWithOptions()
@@ -44,7 +42,6 @@ public class AddDurableTaskSchedulerTests
                 options.Resource.DashboardEndpoint = TestDashboardEndpoint;
                 options.Resource.SchedulerEndpoint = TestSchedulerEndpoint;
                 options.Resource.SchedulerName = TestSchedulerName;
-                options.Resource.SubscriptionId = TestSubscriptionId;
             });
 
         using var app = builder.Build();
@@ -66,10 +63,9 @@ public class AddDurableTaskSchedulerTests
         Assert.Equal(TestDashboardEndpoint, scheduler.DashboardEndpoint);
         Assert.Equal(TestSchedulerEndpoint, scheduler.SchedulerEndpoint);
         Assert.Equal(TestSchedulerName, scheduler.SchedulerName);
-        Assert.Equal(TestSubscriptionId, scheduler.SubscriptionId);
 
         Assert.NotNull(scheduler.SubscriptionIdExpression);
-        Assert.Equal(TestSubscriptionId, await scheduler.SubscriptionIdExpression.GetValueAsync(CancellationToken.None));
+        Assert.Equal("default", await scheduler.SubscriptionIdExpression.GetValueAsync(CancellationToken.None));
     }
 
     [Fact]

@@ -3,10 +3,10 @@ using Aspire.Hosting.ApplicationModel;
 namespace CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
 
 /// <summary>
-/// 
+/// Represents an indivdual task hub of a Durable Task Scheduler.
 /// </summary>
-/// <param name="name"></param>
-/// <param name="parent"></param>
+/// <param name="name">The name of the task hub resource.</param>
+/// <param name="parent">The scheduler to which the task hub belongs.</param>
 public class DurableTaskHubResource(string name, DurableTaskSchedulerResource parent)
     : Resource(name), IResourceWithConnectionString, IResourceWithEndpoints, IResourceWithParent<DurableTaskSchedulerResource>, IResourceWithDashboard
 {
@@ -14,19 +14,18 @@ public class DurableTaskHubResource(string name, DurableTaskSchedulerResource pa
     public ReferenceExpression ConnectionStringExpression =>
         ReferenceExpression.Create($"{this.Parent.ConnectionStringExpression};TaskHub={this.ResolveTaskHubName()}");
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public ReferenceExpression DashboardEndpointExpression =>
-        this.GetDashboardEndpoint();
-
     /// <inheritdoc />
     public DurableTaskSchedulerResource Parent => parent;
 
     /// <summary>
-    /// 
+    /// Gets or sets the name of the task hub (if different from the resource name).
     /// </summary>
     public string? TaskHubName { get; set; }
+
+    ReferenceExpression IResourceWithDashboard.DashboardEndpointExpression =>
+        this.GetDashboardEndpoint();
+
+    bool IResourceWithDashboard.IsTaskHub => true;
 
     ReferenceExpression GetDashboardEndpoint()
     {
@@ -34,7 +33,7 @@ public class DurableTaskHubResource(string name, DurableTaskSchedulerResource pa
 
         // NOTE: The endpoint is expected to have the trailing slash.
         return ReferenceExpression.Create(
-            $"{this.Parent.DashboardEndpointExpression}subscriptions/{this.Parent.SubscriptionIdExpression ?? defaultValue}/schedulers/{this.Parent.SchedulerNameExpression ?? defaultValue}/taskhubs/{this.ResolveTaskHubName()}?endpoint={QueryParameterReference.Create(this.Parent.SchedulerEndpointExpression)}");
+            $"{(this.Parent as IResourceWithDashboard).DashboardEndpointExpression}subscriptions/{this.Parent.SubscriptionIdExpression ?? defaultValue}/schedulers/{this.Parent.SchedulerNameExpression ?? defaultValue}/taskhubs/{this.ResolveTaskHubName()}?endpoint={QueryParameterReference.Create(this.Parent.SchedulerEndpointExpression)}");
     }
 
     string ResolveTaskHubName()

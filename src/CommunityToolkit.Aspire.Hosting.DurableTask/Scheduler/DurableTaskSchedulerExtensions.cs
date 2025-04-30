@@ -1,7 +1,6 @@
 using Aspire.Hosting.ApplicationModel;
 using CommunityToolkit.Aspire.Hosting.DurableTask;
 using CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
-using Microsoft.AspNetCore.Authentication;
 using System.Diagnostics;
 
 namespace Aspire.Hosting;
@@ -26,8 +25,7 @@ public static class DurableTaskSchedulerExtensions
         
         configure?.Invoke(resourceBuilder);
 
-        resourceBuilder.WithOpenDashboardCommand(
-            resourceBuilder.Resource.DashboardEndpointExpression);
+        resourceBuilder.WithOpenDashboardCommand();
 
         return resourceBuilder;
     }
@@ -189,9 +187,7 @@ public static class DurableTaskSchedulerExtensions
         
         configure?.Invoke(taskHubResourceBuilder);
 
-        taskHubResourceBuilder.WithOpenDashboardCommand(
-            taskHubResource.DashboardEndpointExpression,
-            isTaskHub: true);
+        taskHubResourceBuilder.WithOpenDashboardCommand();
 
         return taskHubResourceBuilder;
     }
@@ -222,12 +218,12 @@ public static class DurableTaskSchedulerExtensions
         return builder;
     }
     
-    static IResourceBuilder<T> WithOpenDashboardCommand<T>(this IResourceBuilder<T> builder, ReferenceExpression dashboardEndpointExpression, bool isTaskHub = false) where T : IResourceWithDashboard
+    static IResourceBuilder<T> WithOpenDashboardCommand<T>(this IResourceBuilder<T> builder) where T : IResourceWithDashboard
     {
         if (!builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
         {
             builder.WithCommand(
-                isTaskHub ? "durabletask-hub-open-dashboard" : "durabletask-scheduler-open-dashboard",
+                builder.Resource.IsTaskHub ? "durabletask-hub-open-dashboard" : "durabletask-scheduler-open-dashboard",
                 "Open Dashboard",
                 async context =>
                 {
@@ -239,8 +235,9 @@ public static class DurableTaskSchedulerExtensions
                 },
                 new()
                 {
+                    Description = "Open the Durable Task Scheduler Dashboard",
                     IconName = "GlobeArrowForward",
-                    IsHighlighted = isTaskHub
+                    IsHighlighted = builder.Resource.IsTaskHub,
                 });
         }
 
