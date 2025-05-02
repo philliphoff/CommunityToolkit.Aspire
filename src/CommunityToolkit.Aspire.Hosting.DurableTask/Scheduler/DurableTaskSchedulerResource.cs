@@ -32,11 +32,6 @@ public sealed class DurableTaskSchedulerResource(string name)
         this.CreateConnectionString();
 
     /// <summary>
-    /// Gets or sets the endpoint used to access the scheduler's dashboard.
-    /// </summary>
-    public Uri? DashboardEndpoint { get; set; }
-
-    /// <summary>
     /// Gets a value indicating whether the scheduler is running as a local emulator.
     /// </summary>
     public bool IsEmulator => this.IsContainer();
@@ -52,7 +47,7 @@ public sealed class DurableTaskSchedulerResource(string name)
     public string? SchedulerName { get; set; }
 
     ReferenceExpression IResourceWithDashboard.DashboardEndpointExpression =>
-        this.CreateDashboardEndpoint();
+        this.ResolveDashboardEndpoint();
 
     internal ReferenceExpression SchedulerEndpointExpression =>
         this.CreateSchedulerEndpoint();
@@ -65,21 +60,16 @@ public sealed class DurableTaskSchedulerResource(string name)
 
     ReferenceExpression? ResolveSubscriptionId()
     {
-        if (this.TryGetLastAnnotation(out ExistingDurableTaskSchedulerAnnotation? annotation))
+        if (this.TryGetLastAnnotation(out DurableTaskSchedulerDashboardAnnotation? annotation) && annotation.SubscriptionId is not null)
         {
             return ReferenceExpression.Create($"{annotation.SubscriptionId}");
         }
-        
+
         return null;
     }
     
     ReferenceExpression ResolveSchedulerName()
     {
-        if (this.TryGetLastAnnotation(out ExistingDurableTaskSchedulerAnnotation? annotation))
-        {
-            return ReferenceExpression.Create($"{annotation.Name}");
-        }
-
         if (this.SchedulerName is not null)
         {
             return ReferenceExpression.Create($"{this.SchedulerName}");
@@ -90,6 +80,11 @@ public sealed class DurableTaskSchedulerResource(string name)
 
     ReferenceExpression CreateConnectionString(string? applicationName = null)
     {
+        if (this.TryGetLastAnnotation(out ExistingDurableTaskSchedulerAnnotation? annotation))
+        {
+            return ReferenceExpression.Create($"{annotation.ConnectionString}");
+        }
+
         string connectionString = $"Authentication={this.Authentication ?? DurableTaskSchedulerAuthentication.None}";
         
         if (this.ClientId is not null)
@@ -100,22 +95,18 @@ public sealed class DurableTaskSchedulerResource(string name)
         return ReferenceExpression.Create($"Endpoint={this.SchedulerEndpointExpression};{connectionString}");
     }
     
-    ReferenceExpression CreateDashboardEndpoint()
+    ReferenceExpression ResolveDashboardEndpoint()
     {
+        if (this.TryGetLastAnnotation(out DurableTaskSchedulerDashboardAnnotation? annotation) && annotation.DashboardEndpoint is not null)
+        {
+            // NOTE: Container endpoints do not include the trailing slash.
+            return ReferenceExpression.Create($"{annotation.DashboardEndpoint}/");
+        }
+
         if (this.IsEmulator)
         {
             // NOTE: Container endpoints do not include the trailing slash.
             return ReferenceExpression.Create($"{this.EmulatorDashboardEndpoint}/");
-        }
-
-        if (this.TryGetLastAnnotation(out ExistingDurableTaskSchedulerAnnotation? annotation))
-        {
-            return ReferenceExpression.Create($"{annotation.DashboardEndpoint}");
-        }
-
-        if (this.DashboardEndpoint is not null)
-        {
-            return ReferenceExpression.Create($"{this.DashboardEndpoint.ToString()}");
         }
 
         return ReferenceExpression.Create($"{Constants.Scheduler.Dashboard.Endpoint.ToString()}");
@@ -127,11 +118,6 @@ public sealed class DurableTaskSchedulerResource(string name)
         {
             // NOTE: Container endpoints do not include the trailing slash.
             return ReferenceExpression.Create($"{this.EmulatorSchedulerEndpoint}/");
-        }
-
-        if (this.TryGetLastAnnotation(out ExistingDurableTaskSchedulerAnnotation? annotation))
-        {
-            return ReferenceExpression.Create($"{annotation.SchedulerEndpoint}");
         }
 
         if (this.SchedulerEndpoint is not null)

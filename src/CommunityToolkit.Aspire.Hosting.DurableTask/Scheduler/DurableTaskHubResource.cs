@@ -33,16 +33,30 @@ public class DurableTaskHubResource(string name, DurableTaskSchedulerResource pa
 
         // NOTE: The endpoint is expected to have the trailing slash.
         return ReferenceExpression.Create(
-            $"{(this.Parent as IResourceWithDashboard).DashboardEndpointExpression}subscriptions/{this.Parent.SubscriptionIdExpression ?? defaultValue}/schedulers/{this.Parent.SchedulerNameExpression ?? defaultValue}/taskhubs/{this.ResolveTaskHubName()}?endpoint={QueryParameterReference.Create(this.Parent.SchedulerEndpointExpression)}");
+            $"{this.ResolveDashboardEndpoint()}subscriptions/{this.ResolveSubscriptionId() ?? defaultValue}/schedulers/{this.Parent.SchedulerNameExpression}/taskhubs/{this.ResolveTaskHubName()}?endpoint={QueryParameterReference.Create(this.Parent.SchedulerEndpointExpression)}");
     }
 
-    string ResolveTaskHubName()
+    string ResolveTaskHubName() => this.TaskHubName ?? this.Name;
+
+    ReferenceExpression ResolveDashboardEndpoint()
     {
-        if (TaskHubName is not null)
+        if (this.TryGetLastAnnotation<DurableTaskSchedulerDashboardAnnotation>(out var annotation)
+            && annotation.DashboardEndpoint is not null)
         {
-            return TaskHubName;
+            return ReferenceExpression.Create($"{annotation.DashboardEndpoint}");
         }
 
-        return this.Name;
+        return (this.Parent as IResourceWithDashboard).DashboardEndpointExpression;
+    }
+
+    ReferenceExpression? ResolveSubscriptionId()
+    {
+        if (this.TryGetLastAnnotation<DurableTaskSchedulerDashboardAnnotation>(out var annotation)
+            && annotation.SubscriptionId is not null)
+        {
+            return ReferenceExpression.Create($"{annotation.SubscriptionId}");
+        }
+
+        return this.Parent.SubscriptionIdExpression;
     }
 }

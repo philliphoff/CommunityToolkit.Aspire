@@ -4,11 +4,7 @@ var builder = DistributedApplication.CreateBuilder(args);
 
 var scheduler =
     builder.AddDurableTaskScheduler("scheduler")
-           .RunAsExisting(
-                name: builder.AddParameter("scheduler-name"),
-                subscriptionId: builder.AddParameter("scheduler-subscription"),
-                schedulerEndpoint: builder.AddParameter("scheduler-endpoint"),
-                dashboardEndpoint: builder.AddParameter("dashboard-endpoint"));
+           .RunAsExisting(builder.AddParameter("scheduler-connection-string"));
 
 var taskHub =
     scheduler.AddTaskHub("taskhub")

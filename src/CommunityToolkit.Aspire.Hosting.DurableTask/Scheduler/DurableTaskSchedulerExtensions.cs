@@ -2,6 +2,7 @@ using Aspire.Hosting.ApplicationModel;
 using CommunityToolkit.Aspire.Hosting.DurableTask;
 using CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
 using System.Diagnostics;
+using System.Reflection.Metadata;
 
 namespace Aspire.Hosting;
 
@@ -24,8 +25,6 @@ public static class DurableTaskSchedulerExtensions
         var resourceBuilder = builder.AddResource(resource);
         
         configure?.Invoke(resourceBuilder);
-
-        resourceBuilder.WithOpenDashboardCommand();
 
         return resourceBuilder;
     }
@@ -105,47 +104,93 @@ public static class DurableTaskSchedulerExtensions
     /// Marks the resource as an existing Durable Task Scheduler instance when the application is running.
     /// </summary>
     /// <param name="builder">The Durable Task Scheduler resource builder.</param>
-    /// <param name="name">The name of the Durable Task Scheduler instance.</param>
-    /// <param name="subscriptionId">The ID of the Azure subscription in which the Durable Task Scheduler instance resides.</param>
-    /// <param name="schedulerEndpoint">The endpoint of the Durable Task Scheduler instance.</param>
-    /// <param name="dashboardEndpoint">(Optional) The endpoint of the dashboard for the Durable Task Scheduler instance.</param>
+    /// <param name="connectionString">The connection string to the existing Durable Task Scheduler instance.</param>
     /// <returns>A reference to the <see cref="IResourceBuilder{DurableTaskSchedulerResource}" />.</returns>
-    public static IResourceBuilder<DurableTaskSchedulerResource> RunAsExisting(this IResourceBuilder<DurableTaskSchedulerResource> builder, string name, string subscriptionId, Uri schedulerEndpoint, Uri? dashboardEndpoint = null)
+    public static IResourceBuilder<DurableTaskSchedulerResource> RunAsExisting(this IResourceBuilder<DurableTaskSchedulerResource> builder, IResourceBuilder<ParameterResource> connectionString)
+    {        
+        return builder.RunAsExisting(connectionString.Resource.Value);
+    }
+
+    /// <summary>
+    /// Marks the resource as an existing Durable Task Scheduler instance when the application is running.
+    /// </summary>
+    /// <param name="builder">The Durable Task Scheduler resource builder.</param>
+    /// <param name="connectionString">The connection string to the existing Durable Task Scheduler instance.</param>
+    /// <returns>A reference to the <see cref="IResourceBuilder{DurableTaskSchedulerResource}" />.</returns>
+    public static IResourceBuilder<DurableTaskSchedulerResource> RunAsExisting(this IResourceBuilder<DurableTaskSchedulerResource> builder, string connectionString)
     {
         if (!builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
         {
-            builder.WithAnnotation(new ExistingDurableTaskSchedulerAnnotation(
-                ParameterOrValue.Create(name),
-                ParameterOrValue.Create(subscriptionId),
-                ParameterOrValue.Create(schedulerEndpoint.ToString()),
-                dashboardEndpoint is not null ? ParameterOrValue.Create(dashboardEndpoint.ToString()) : null));
-            
-            builder.Resource.Authentication ??= DurableTaskSchedulerAuthentication.Default;
+            builder.WithAnnotation(new ExistingDurableTaskSchedulerAnnotation(ParameterOrValue.Create(connectionString)));
+
+            var connectionStringParameters = ParseConnectionString(connectionString);
+
+            if (connectionStringParameters.TryGetValue("Endpoint", out string? endpoint))
+            {
+                builder.Resource.SchedulerEndpoint ??= new Uri(endpoint);
+            }
+
+            if (connectionStringParameters.TryGetValue("Authentication", out string? authentication))
+            {
+                builder.Resource.Authentication ??= authentication;
+            }
         }
 
         return builder;
     }
    
+    static IReadOnlyDictionary<string, string> ParseConnectionString(string connectionString)
+    {
+        Dictionary<string, string> dictionary = new(StringComparer.OrdinalIgnoreCase);
+
+        var parameters = connectionString.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        foreach (var parameter in parameters)
+        {
+            var keyValue = parameter.Split('=', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            if (keyValue.Length != 2)
+            {
+                throw new ArgumentException($"Invalid connection string format: {parameter}");
+            }
+
+            dictionary[keyValue[0]] = keyValue[1];
+        }
+
+        return dictionary;
+    }
+
     /// <summary>
-    /// Marks the resource as an existing Durable Task Scheduler instance when the application is running.
+    /// 
     /// </summary>
-    /// <param name="builder">The Durable Task Scheduler resource builder.</param>
-    /// <param name="name">The name of the Durable Task Scheduler instance.</param>
-    /// <param name="subscriptionId">The ID of the Azure subscription in which the Durable Task Scheduler instance resides.</param>
-    /// <param name="schedulerEndpoint">The endpoint of the Durable Task Scheduler instance.</param>
-    /// <param name="dashboardEndpoint">(Optional) The endpoint of the dashboard for the Durable Task Scheduler instance.</param>
-    /// <returns>A reference to the <see cref="IResourceBuilder{DurableTaskSchedulerResource}" />.</returns>
-    public static IResourceBuilder<DurableTaskSchedulerResource> RunAsExisting(this IResourceBuilder<DurableTaskSchedulerResource> builder, IResourceBuilder<ParameterResource> name, IResourceBuilder<ParameterResource> subscriptionId, IResourceBuilder<ParameterResource> schedulerEndpoint, IResourceBuilder<ParameterResource>? dashboardEndpoint = null)
+    /// <param name="builder"></param>
+    /// <param name="dashboardEndpoint"></param>
+    /// <returns></returns>
+    public static IResourceBuilder<DurableTaskSchedulerResource> WithDashboard(this IResourceBuilder<DurableTaskSchedulerResource> builder, string dashboardEndpoint)
+    {
+        return builder.WithDashboard(ParameterOrValue.Create(dashboardEndpoint));
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="dashboardEndpoint"></param>
+    /// <returns></returns>
+    public static IResourceBuilder<DurableTaskSchedulerResource> WithDashboard(this IResourceBuilder<DurableTaskSchedulerResource> builder, IResourceBuilder<ParameterResource>? dashboardEndpoint = null)
+    {
+        return builder.WithDashboard(dashboardEndpoint is not null ? ParameterOrValue.Create(dashboardEndpoint) : null);
+    }
+
+    static IResourceBuilder<DurableTaskSchedulerResource> WithDashboard(this IResourceBuilder<DurableTaskSchedulerResource> builder, ParameterOrValue? dashboardEndpoint)
     {
         if (!builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
         {
-            builder.WithAnnotation(new ExistingDurableTaskSchedulerAnnotation(
-                ParameterOrValue.Create(name.Resource),
-                ParameterOrValue.Create(subscriptionId.Resource),
-                ParameterOrValue.Create(schedulerEndpoint.Resource),
-                dashboardEndpoint is not null ? ParameterOrValue.Create(dashboardEndpoint.Resource) : null));
+            builder.WithAnnotation(new DurableTaskSchedulerDashboardAnnotation(
+                subscriptionId: null,
+                dashboardEndpoint: dashboardEndpoint));
 
-            builder.Resource.Authentication ??= DurableTaskSchedulerAuthentication.Default;
+            builder.WithOpenDashboardCommand();
         }
 
         return builder;
@@ -165,8 +210,6 @@ public static class DurableTaskSchedulerExtensions
         var taskHubResourceBuilder = builder.ApplicationBuilder.AddResource(taskHubResource);
         
         configure?.Invoke(taskHubResourceBuilder);
-
-        taskHubResourceBuilder.WithOpenDashboardCommand();
 
         return taskHubResourceBuilder;
     }
@@ -197,6 +240,48 @@ public static class DurableTaskSchedulerExtensions
         return builder;
     }
     
+        /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="dashboardEndpoint"></param>
+    /// <param name="subscriptionId"></param>
+    /// <returns></returns>
+    public static IResourceBuilder<DurableTaskHubResource> WithDashboard(this IResourceBuilder<DurableTaskHubResource> builder, string? dashboardEndpoint, string? subscriptionId)
+    {
+        return builder.WithDashboard(
+            dashboardEndpoint: dashboardEndpoint is not null ? ParameterOrValue.Create(dashboardEndpoint) : null,
+            subscriptionId: subscriptionId is not null ? ParameterOrValue.Create(subscriptionId) : null);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="dashboardEndpoint"></param>
+    /// <param name="subscriptionId"></param>
+    /// <returns></returns>
+    public static IResourceBuilder<DurableTaskHubResource> WithDashboard(this IResourceBuilder<DurableTaskHubResource> builder, IResourceBuilder<ParameterResource>? dashboardEndpoint = null, IResourceBuilder<ParameterResource>? subscriptionId = null)
+    {
+        return builder.WithDashboard(
+            dashboardEndpoint: dashboardEndpoint is not null ? ParameterOrValue.Create(dashboardEndpoint) : null,
+            subscriptionId: subscriptionId is not null ? ParameterOrValue.Create(subscriptionId) : null);
+    }
+
+    static IResourceBuilder<DurableTaskHubResource> WithDashboard(this IResourceBuilder<DurableTaskHubResource> builder, ParameterOrValue? dashboardEndpoint, ParameterOrValue? subscriptionId)
+    {
+        if (!builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
+        {
+            builder.WithAnnotation(new DurableTaskSchedulerDashboardAnnotation(
+                subscriptionId: subscriptionId,
+                dashboardEndpoint: dashboardEndpoint));
+
+            builder.WithOpenDashboardCommand();
+        }
+
+        return builder;
+    }
+
     /// <summary>
     /// Enables the use of dynamic task hubs for the emulator.
     /// </summary>
