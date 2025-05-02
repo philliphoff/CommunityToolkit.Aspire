@@ -31,6 +31,7 @@ public class AddDurableTaskSchedulerTests
         Assert.Null(scheduler.SubscriptionIdExpression);
         
         Assert.Equal(Constants.Scheduler.Dashboard.Endpoint.ToString(), await (scheduler as IResourceWithDashboard).DashboardEndpointExpression.GetValueAsync(CancellationToken.None));
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await scheduler.DashboardSchedulerEndpointExpression.GetValueAsync(CancellationToken.None));
         Assert.Equal("scheduler", await scheduler.SchedulerNameExpression.GetValueAsync(CancellationToken.None));
     }
 
@@ -67,6 +68,7 @@ public class AddDurableTaskSchedulerTests
         Assert.Null(scheduler.SubscriptionIdExpression);
         
         Assert.Equal("https://dashboard.durabletask.io/".ToString(), await (scheduler as IResourceWithDashboard).DashboardEndpointExpression.GetValueAsync(CancellationToken.None));
+        Assert.Equal("https://scheduler.test.io/", scheduler.DashboardSchedulerEndpointExpression.ValueExpression);
         Assert.Equal("TestSchedulerName", await scheduler.SchedulerNameExpression.GetValueAsync(CancellationToken.None));
     }
 
@@ -97,6 +99,7 @@ public class AddDurableTaskSchedulerTests
         Assert.Null(scheduler.SubscriptionIdExpression);
         
         Assert.Equal("https://dashboard.durabletask.io/".ToString(), await (scheduler as IResourceWithDashboard).DashboardEndpointExpression.GetValueAsync(CancellationToken.None));
+        Assert.Equal("https://scheduler.test.io/", scheduler.DashboardSchedulerEndpointExpression.ValueExpression);
         Assert.Equal("scheduler", await scheduler.SchedulerNameExpression.GetValueAsync(CancellationToken.None));
     }
 
@@ -127,6 +130,7 @@ public class AddDurableTaskSchedulerTests
         Assert.Null(scheduler.SubscriptionIdExpression);
         
         Assert.Equal("{scheduler.bindings.dashboard.url}/", (scheduler as IResourceWithDashboard).DashboardEndpointExpression.ValueExpression);
+        Assert.Equal("{scheduler.bindings.dashboard.url}/api/", scheduler.DashboardSchedulerEndpointExpression.ValueExpression);
         Assert.Equal("scheduler", await scheduler.SchedulerNameExpression.GetValueAsync(CancellationToken.None));
     }
 }

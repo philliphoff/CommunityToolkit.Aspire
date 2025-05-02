@@ -73,7 +73,26 @@ public static class DurableTaskSchedulerExtensions
                 {
                     Image = Constants.Scheduler.Emulator.Container.Image,
                     Tag = Constants.Scheduler.Emulator.Container.Tag
-                });
+                })
+            .WithDashboard();
+
+        //
+        // Add dashboards for existing task hubs (not already marked to have a dashboard annotation).
+        //
+
+        var existingTaskHubs =
+            builder
+                .ApplicationBuilder
+                .Resources
+                .OfType<DurableTaskHubResource>()
+                .Where(taskHub => taskHub.Parent == builder.Resource)
+                .Where(taskHub => !taskHub.HasAnnotationOfType<DurableTaskSchedulerDashboardAnnotation>());
+
+        foreach (var taskHub in existingTaskHubs)
+        {
+            builder.ApplicationBuilder.CreateResourceBuilder(taskHub).WithDashboard();
+        }
+
 
         if (configureContainer is not null)
         {
@@ -210,6 +229,11 @@ public static class DurableTaskSchedulerExtensions
         var taskHubResourceBuilder = builder.ApplicationBuilder.AddResource(taskHubResource);
         
         configure?.Invoke(taskHubResourceBuilder);
+
+        if (builder.Resource.IsEmulator)
+        {
+            taskHubResourceBuilder.WithDashboard();
+        }
 
         return taskHubResourceBuilder;
     }

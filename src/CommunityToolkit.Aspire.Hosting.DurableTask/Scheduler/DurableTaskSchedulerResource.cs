@@ -49,8 +49,11 @@ public sealed class DurableTaskSchedulerResource(string name)
     ReferenceExpression IResourceWithDashboard.DashboardEndpointExpression =>
         this.ResolveDashboardEndpoint();
 
+    internal ReferenceExpression DashboardSchedulerEndpointExpression =>
+        this.ResolveDashboardSchedulerEndpoint();
+
     internal ReferenceExpression SchedulerEndpointExpression =>
-        this.CreateSchedulerEndpoint();
+        this.ResolveSchedulerEndpoint();
 
     internal ReferenceExpression? SubscriptionIdExpression =>
         this.ResolveSubscriptionId();
@@ -112,17 +115,27 @@ public sealed class DurableTaskSchedulerResource(string name)
         return ReferenceExpression.Create($"{Constants.Scheduler.Dashboard.Endpoint.ToString()}");
     }
     
-    ReferenceExpression CreateSchedulerEndpoint()
+    ReferenceExpression ResolveDashboardSchedulerEndpoint()
     {
+        if (this.IsEmulator)
+        {
+            return ReferenceExpression.Create($"{this.EmulatorDashboardEndpoint}/api/");
+        }
+
+        return this.ResolveSchedulerEndpoint();
+    }
+
+    ReferenceExpression ResolveSchedulerEndpoint()
+    {
+        if (this.SchedulerEndpoint is not null)
+        {
+            return ReferenceExpression.Create($"{this.SchedulerEndpoint.ToString()}");
+        }
+
         if (this.IsEmulator)
         {
             // NOTE: Container endpoints do not include the trailing slash.
             return ReferenceExpression.Create($"{this.EmulatorSchedulerEndpoint}/");
-        }
-
-        if (this.SchedulerEndpoint is not null)
-        {
-            return ReferenceExpression.Create($"{this.SchedulerEndpoint.ToString()}");
         }
 
         throw new InvalidOperationException("Scheduler endpoint is not set.");

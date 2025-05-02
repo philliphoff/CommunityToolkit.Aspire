@@ -33,7 +33,7 @@ public class DurableTaskHubResource(string name, DurableTaskSchedulerResource pa
 
         // NOTE: The endpoint is expected to have the trailing slash.
         return ReferenceExpression.Create(
-            $"{this.ResolveDashboardEndpoint()}subscriptions/{this.ResolveSubscriptionId() ?? defaultValue}/schedulers/{this.Parent.SchedulerNameExpression}/taskhubs/{this.ResolveTaskHubName()}?endpoint={QueryParameterReference.Create(this.Parent.SchedulerEndpointExpression)}");
+            $"{this.ResolveDashboardEndpoint()}subscriptions/{this.ResolveSubscriptionId() ?? defaultValue}/schedulers/{this.Parent.SchedulerNameExpression}/taskhubs/{this.ResolveTaskHubName()}?endpoint={QueryParameterReference.Create(this.Parent.DashboardSchedulerEndpointExpression)}");
     }
 
     string ResolveTaskHubName() => this.TaskHubName ?? this.Name;
