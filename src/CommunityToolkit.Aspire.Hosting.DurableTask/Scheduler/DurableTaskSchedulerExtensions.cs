@@ -96,6 +96,8 @@ public static class DurableTaskSchedulerExtensions
             }
         }
 
+        builder.Resource.Authentication ??= DurableTaskSchedulerAuthentication.None;
+
         return builder;
     }
 
@@ -108,17 +110,17 @@ public static class DurableTaskSchedulerExtensions
     /// <param name="schedulerEndpoint">The endpoint of the Durable Task Scheduler instance.</param>
     /// <param name="dashboardEndpoint">(Optional) The endpoint of the dashboard for the Durable Task Scheduler instance.</param>
     /// <returns>A reference to the <see cref="IResourceBuilder{DurableTaskSchedulerResource}" />.</returns>
-    public static IResourceBuilder<DurableTaskSchedulerResource> RunAsExisting(this IResourceBuilder<DurableTaskSchedulerResource> builder, string name, string subscriptionId, string schedulerEndpoint, string? dashboardEndpoint = null)
+    public static IResourceBuilder<DurableTaskSchedulerResource> RunAsExisting(this IResourceBuilder<DurableTaskSchedulerResource> builder, string name, string subscriptionId, Uri schedulerEndpoint, Uri? dashboardEndpoint = null)
     {
         if (!builder.ApplicationBuilder.ExecutionContext.IsPublishMode)
         {
             builder.WithAnnotation(new ExistingDurableTaskSchedulerAnnotation(
                 ParameterOrValue.Create(name),
                 ParameterOrValue.Create(subscriptionId),
-                ParameterOrValue.Create(schedulerEndpoint),
-                dashboardEndpoint is not null ? ParameterOrValue.Create(dashboardEndpoint) : null));
+                ParameterOrValue.Create(schedulerEndpoint.ToString()),
+                dashboardEndpoint is not null ? ParameterOrValue.Create(dashboardEndpoint.ToString()) : null));
             
-            builder.Resource.Authentication = DurableTaskSchedulerAuthentication.Default;
+            builder.Resource.Authentication ??= DurableTaskSchedulerAuthentication.Default;
         }
 
         return builder;
@@ -143,7 +145,7 @@ public static class DurableTaskSchedulerExtensions
                 ParameterOrValue.Create(schedulerEndpoint.Resource),
                 dashboardEndpoint is not null ? ParameterOrValue.Create(dashboardEndpoint.Resource) : null));
 
-            builder.Resource.Authentication = DurableTaskSchedulerAuthentication.Default;
+            builder.Resource.Authentication ??= DurableTaskSchedulerAuthentication.Default;
         }
 
         return builder;

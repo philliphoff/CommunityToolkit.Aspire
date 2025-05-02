@@ -60,7 +60,7 @@ public sealed class DurableTaskSchedulerResource(string name)
     internal ReferenceExpression? SubscriptionIdExpression =>
         this.ResolveSubscriptionId();
 
-    internal ReferenceExpression? SchedulerNameExpression =>
+    internal ReferenceExpression SchedulerNameExpression =>
         this.ResolveSchedulerName();
 
     ReferenceExpression? ResolveSubscriptionId()
@@ -73,7 +73,7 @@ public sealed class DurableTaskSchedulerResource(string name)
         return null;
     }
     
-    ReferenceExpression? ResolveSchedulerName()
+    ReferenceExpression ResolveSchedulerName()
     {
         if (this.TryGetLastAnnotation(out ExistingDurableTaskSchedulerAnnotation? annotation))
         {
@@ -85,7 +85,7 @@ public sealed class DurableTaskSchedulerResource(string name)
             return ReferenceExpression.Create($"{this.SchedulerName}");
         }
 
-        return null;
+        return ReferenceExpression.Create($"{this.Name}");
     }
 
     ReferenceExpression CreateConnectionString(string? applicationName = null)
@@ -94,7 +94,7 @@ public sealed class DurableTaskSchedulerResource(string name)
         
         if (this.ClientId is not null)
         {
-            connectionString += $";ClientId={this.ClientId}";
+            connectionString += $";ClientID={this.ClientId}";
         }
         
         return ReferenceExpression.Create($"Endpoint={this.SchedulerEndpointExpression};{connectionString}");
