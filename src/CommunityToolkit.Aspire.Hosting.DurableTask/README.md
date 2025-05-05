@@ -32,6 +32,8 @@ builder.AddProject<Projects.MyApp>("myapp")
 builder.Build().Run();
 ```
 
+> NOTE: When referencing the taskhub resource, the connection string will include the task hub name whereas the connection string for a scheduler resource will not. Use the latter when an application specifies the task hub name separately from the connection string (e.g. Azure Durable Functions).
+
 ### Using an existing Durable Task Scheduler
 
 In the _Program.cs_ file of `AppHost`, add Durable Task Scheduler resources and consume the connection using the following methods:
@@ -39,14 +41,13 @@ In the _Program.cs_ file of `AppHost`, add Durable Task Scheduler resources and 
 ```csharp
 var builder = DistributedApplication.CreateBuilder(args);
 
-var scheduler = builder.AddDurableTaskScheduler("scheduler")
-                       .RunAsExisting(
-                           name: "myscheduler",
-                           subscriptionId: "mysubscription",
-                           schedulerEndpoint: "https://myscheduler.durabletask.io");
+var scheduler =
+    builder.AddDurableTaskScheduler("scheduler")
+           .RunAsExisting(builder.AddParameter("scheduler-connection-string"));
 
-var taskHub = scheduler.AddDurableTaskHub("taskhub")
-                       .WithTaskHubName("mytaskhub");
+var taskHub =
+    scheduler.AddTaskHub("taskhub")
+             .WithTaskHubName(builder.AddParameter("taskhub-name"));
 
 builder.AddProject<Projects.MyApp>("myapp")
        .WithReference(taskHub);
@@ -56,8 +57,8 @@ builder.Build().Run();
 
 ## Additional documentation
 
-https://github.com/microsoft/durabletask-dotnet
+https://learn.microsoft.com/en-us/azure/azure-functions/durable/durable-task-scheduler/durable-task-scheduler
 
 ## Feedback & contributing
 
-https://github.com/dotnet/aspire
+https://github.com/CommunityToolkit/Aspire
