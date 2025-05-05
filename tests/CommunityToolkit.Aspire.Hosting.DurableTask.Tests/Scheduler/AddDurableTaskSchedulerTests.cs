@@ -153,6 +153,38 @@ public class AddDurableTaskSchedulerTests
     }
 
     [Fact]
+    public async Task AddDurableTaskSchedulerAsEmulatorWithDynamicTaskhubs()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+
+        var schedulerBuilder = builder
+            .AddDurableTaskScheduler("scheduler")
+            .RunAsEmulator(
+                options =>
+                {
+                    options.WithDynamicTaskHubs();
+                });
+
+        using var app = builder.Build();
+
+        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
+
+        var scheduler = model.Resources.OfType<DurableTaskSchedulerResource>().Single();
+
+        Assert.True(scheduler.TryGetEnvironmentVariables(out var environmentVariables));
+
+        EnvironmentCallbackContext context = new(builder.ExecutionContext);
+
+        foreach (var environmentVariable in environmentVariables)
+        {
+            await environmentVariable.Callback(context);
+        }
+
+        Assert.True(context.EnvironmentVariables.TryGetValue("DTS_USE_DYNAMIC_TASK_HUBS", out var useDynamicTaskHubs));
+        Assert.Equal("true", useDynamicTaskHubs);
+    }
+
+    [Fact]
     public async Task AddDurableTaskSchedulerAsEmulatorWithTaskhub()
     {
         using var builder = TestDistributedApplicationBuilder.Create();
@@ -162,7 +194,7 @@ public class AddDurableTaskSchedulerTests
             .RunAsEmulator();
 
         schedulerBuilder.AddTaskHub("taskhub1");
-        schedulerBuilder.AddTaskHub("taskhub2");
+        schedulerBuilder.AddTaskHub("taskhub2").WithTaskHubName("taskhub2a");
 
         using var app = builder.Build();
 
@@ -187,6 +219,6 @@ public class AddDurableTaskSchedulerTests
                 !.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
                 .OrderBy(x => x);
 
-        Assert.Equal(taskHubNames, [ "taskhub1", "taskhub2" ]);
+        Assert.Equal(taskHubNames, [ "taskhub1", "taskhub2a" ]);
     }
 }

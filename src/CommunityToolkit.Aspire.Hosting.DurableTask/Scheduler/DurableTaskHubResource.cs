@@ -25,6 +25,9 @@ public class DurableTaskHubResource(string name, DurableTaskSchedulerResource pa
     ReferenceExpression IResourceWithDashboard.DashboardEndpointExpression =>
         this.GetDashboardEndpoint();
 
+    internal ReferenceExpression TaskHubNameExpression =>
+        ReferenceExpression.Create($"{this.ResolveTaskHubName()}");
+
     bool IResourceWithDashboard.IsTaskHub => true;
 
     ReferenceExpression GetDashboardEndpoint()

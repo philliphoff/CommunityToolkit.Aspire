@@ -1,6 +1,7 @@
 using Aspire.Hosting.ApplicationModel;
 using CommunityToolkit.Aspire.Hosting.DurableTask;
 using CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler;
+using k8s.KubeConfigModels;
 using System.Diagnostics;
 using System.Reflection.Metadata;
 
@@ -50,17 +51,25 @@ public static class DurableTaskSchedulerExtensions
             .WithEndpoint(name: Constants.Scheduler.Emulator.Endpoints.Dashboard, scheme: "http", targetPort: 8082)
             .WithAnnotation(
                 new EnvironmentCallbackAnnotation(
-                    (EnvironmentCallbackContext context) =>
+                    async (EnvironmentCallbackContext context) =>
                     {
-                        var taskHubNames =
+                        var nameTasks =
                             builder
                                 .ApplicationBuilder
                                 .Resources
                                 .OfType<DurableTaskHubResource>()
                                 .Where(r => r.Parent == builder.Resource)
-                                .Select(r => r.TaskHubName ?? r.Name)
-                                .Distinct()
+                                .Select(r => r.TaskHubNameExpression)
+                                .Select(async r => await r.GetValueAsync(context.CancellationToken))
                                 .ToList();
+
+                        await Task.WhenAll(nameTasks);
+
+                        var taskHubNames = nameTasks
+                            .Select(r => r.Result)
+                            .Where(r => r is not null)
+                            .Distinct()
+                            .ToList();
 
                         if (taskHubNames.Any())
                         {
