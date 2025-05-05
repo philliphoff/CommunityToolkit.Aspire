@@ -28,6 +28,7 @@ jobs:
             Hosting.Dapr.Tests,
             Hosting.DbGate.Tests,
             Hosting.Deno.Tests,
+            Hosting.DurableTask.Tests,
             Hosting.EventStore.Tests,
             Hosting.GoFeatureFlag.Tests,
             Hosting.Golang.Tests,
