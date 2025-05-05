@@ -36,7 +36,7 @@ public static class DurableTaskSchedulerExtensions
     /// <param name="configureContainer">Callback that exposes the underlying container used for emulation allowing for customization.</param>
     /// <returns>A reference to the <see cref="IResourceBuilder{DurableTaskSchedulerResource}" />.</returns>
     /// <remarks>
-    /// This version of the package defaults to the <inheritdoc cref="Constants.Scheduler.Emulator.Container.Tag" /> tag of the <inheritdoc cref="Constants.Scheduler.Emulator.Container.Image" /> container image.
+    /// This version of the package defaults to the <inheritdoc cref="Constants.Scheduler.Emulator.Container.Tag" /> tag of the <inheritdoc cref="Constants.Scheduler.Emulator.Container.Image" /> container image in the <inheritdoc cref="Constants.Scheduler.Emulator.Container.Registry" /> registry.
     /// </remarks>
     public static IResourceBuilder<DurableTaskSchedulerResource> RunAsEmulator(this IResourceBuilder<DurableTaskSchedulerResource> builder, Action<IResourceBuilder<DurableTaskSchedulerEmulatorResource>>? configureContainer = null)
     {
@@ -71,6 +71,7 @@ public static class DurableTaskSchedulerExtensions
             .WithAnnotation(
                 new ContainerImageAnnotation
                 {
+                    Registry = Constants.Scheduler.Emulator.Container.Registry,
                     Image = Constants.Scheduler.Emulator.Container.Image,
                     Tag = Constants.Scheduler.Emulator.Container.Tag
                 })

@@ -15,11 +15,14 @@ static class Constants
         {
             public static class Container
             {
-                /// <remarks>mcr.microsoft.com/dts/dts-emulator</remarks>
-                public const string Image = "mcr.microsoft.com/dts/dts-emulator";
+                /// <remarks>mcr.microsoft.com/dts</remarks>
+                public const string Registry = "mcr.microsoft.com/dts";
 
-                /// <remarks>v0.0.6</remarks>
-                public static string Tag => "v0.0.6";
+                /// <remarks>dts-emulator</remarks>
+                public const string Image = "dts-emulator";
+
+                /// <remarks>latest</remarks>
+                public static string Tag => "latest";
             }
 
             public static class Endpoints

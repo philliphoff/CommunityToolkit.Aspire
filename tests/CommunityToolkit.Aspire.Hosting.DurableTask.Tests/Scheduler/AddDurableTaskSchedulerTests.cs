@@ -132,5 +132,61 @@ public class AddDurableTaskSchedulerTests
         Assert.Equal("{scheduler.bindings.dashboard.url}/", (scheduler as IResourceWithDashboard).DashboardEndpointExpression.ValueExpression);
         Assert.Equal("{scheduler.bindings.dashboard.url}/api/", scheduler.DashboardSchedulerEndpointExpression.ValueExpression);
         Assert.Equal("scheduler", await scheduler.SchedulerNameExpression.GetValueAsync(CancellationToken.None));
+
+        Assert.True(scheduler.TryGetLastAnnotation<ContainerImageAnnotation>(out var imageAnnotation));
+
+        Assert.Equal("mcr.microsoft.com/dts", imageAnnotation.Registry);
+        Assert.Equal("dts-emulator", imageAnnotation.Image);
+        Assert.Equal("latest", imageAnnotation.Tag);
+
+        Assert.True(scheduler.TryGetEnvironmentVariables(out var environmentVariables));
+
+        EnvironmentCallbackContext context = new(builder.ExecutionContext);
+
+        foreach (var environmentVariable in environmentVariables)
+        {
+            await environmentVariable.Callback(context);
+        }
+
+        // NOTE: If no task hub names are specified, no variable should be set as the default task hub name.
+        Assert.False(context.EnvironmentVariables.TryGetValue("DTS_TASK_HUB_NAMES", out var taskHubNames));
+    }
+
+    [Fact]
+    public async Task AddDurableTaskSchedulerAsEmulatorWithTaskhub()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create();
+
+        var schedulerBuilder = builder
+            .AddDurableTaskScheduler("scheduler")
+            .RunAsEmulator();
+
+        schedulerBuilder.AddTaskHub("taskhub1");
+        schedulerBuilder.AddTaskHub("taskhub2");
+
+        using var app = builder.Build();
+
+        var model = app.Services.GetRequiredService<DistributedApplicationModel>();
+
+        var scheduler = model.Resources.OfType<DurableTaskSchedulerResource>().Single();
+
+        Assert.True(scheduler.TryGetEnvironmentVariables(out var environmentVariables));
+
+        EnvironmentCallbackContext context = new(builder.ExecutionContext);
+
+        foreach (var environmentVariable in environmentVariables)
+        {
+            await environmentVariable.Callback(context);
+        }
+
+        Assert.True(context.EnvironmentVariables.TryGetValue("DTS_TASK_HUB_NAMES", out var taskHubNameString));
+
+        var taskHubNames =
+            taskHubNameString
+                .ToString()
+                !.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .OrderBy(x => x);
+
+        Assert.Equal(taskHubNames, [ "taskhub1", "taskhub2" ]);
     }
 }
