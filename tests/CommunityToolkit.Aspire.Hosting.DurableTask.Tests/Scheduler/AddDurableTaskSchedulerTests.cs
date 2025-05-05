@@ -131,7 +131,7 @@ public class AddDurableTaskSchedulerTests
         
         Assert.Equal("{scheduler.bindings.dashboard.url}/", (scheduler as IResourceWithDashboard).DashboardEndpointExpression.ValueExpression);
         Assert.Equal("{scheduler.bindings.dashboard.url}/api/", scheduler.DashboardSchedulerEndpointExpression.ValueExpression);
-        Assert.Equal("scheduler", await scheduler.SchedulerNameExpression.GetValueAsync(CancellationToken.None));
+        Assert.Equal("default", await scheduler.SchedulerNameExpression.GetValueAsync(CancellationToken.None));
 
         Assert.True(scheduler.TryGetLastAnnotation<ContainerImageAnnotation>(out var imageAnnotation));
 
@@ -220,5 +220,15 @@ public class AddDurableTaskSchedulerTests
                 .OrderBy(x => x);
 
         Assert.Equal(taskHubNames, [ "taskhub1", "taskhub2a" ]);
+
+        var taskHub1 = model.Resources.OfType<DurableTaskHubResource>().Single(x => x.Name == "taskhub1");
+
+        Assert.Equal("Endpoint={scheduler.bindings.worker.url}/;Authentication=None;TaskHub=taskhub1", taskHub1.ConnectionStringExpression.ValueExpression);
+        Assert.Equal("{scheduler.bindings.dashboard.url}/subscriptions/default/schedulers/default/taskhubs/taskhub1", (taskHub1 as IResourceWithDashboard).DashboardEndpointExpression.ValueExpression);
+
+        var taskHub2 = model.Resources.OfType<DurableTaskHubResource>().Single(x => x.Name == "taskhub2");
+
+        Assert.Equal("Endpoint={scheduler.bindings.worker.url}/;Authentication=None;TaskHub=taskhub2a", taskHub2.ConnectionStringExpression.ValueExpression);
+        Assert.Equal("{scheduler.bindings.dashboard.url}/subscriptions/default/schedulers/default/taskhubs/taskhub2a", (taskHub2 as IResourceWithDashboard).DashboardEndpointExpression.ValueExpression);
     }
 }

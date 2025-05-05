@@ -34,9 +34,17 @@ public class DurableTaskHubResource(string name, DurableTaskSchedulerResource pa
     {
         var defaultValue = ReferenceExpression.Create($"default");
 
-        // NOTE: The endpoint is expected to have the trailing slash.
-        return ReferenceExpression.Create(
-            $"{this.ResolveDashboardEndpoint()}subscriptions/{this.ResolveSubscriptionId() ?? defaultValue}/schedulers/{this.Parent.SchedulerNameExpression}/taskhubs/{this.ResolveTaskHubName()}?endpoint={QueryParameterReference.Create(this.Parent.DashboardSchedulerEndpointExpression)}");
+        ReferenceExpressionBuilder builder = new();
+
+        builder.Append($"{this.ResolveDashboardEndpoint()}subscriptions/{this.ResolveSubscriptionId() ?? defaultValue}/schedulers/{this.Parent.SchedulerNameExpression}/taskhubs/{this.ResolveTaskHubName()}");
+
+        if (!this.Parent.IsEmulator)
+        {
+            // NOTE: The endpoint is expected to have the trailing slash.
+            builder.Append($"?endpoint={QueryParameterReference.Create(this.Parent.DashboardSchedulerEndpointExpression)}");
+        }
+
+        return builder.Build();
     }
 
     string ResolveTaskHubName() => this.TaskHubName ?? this.Name;

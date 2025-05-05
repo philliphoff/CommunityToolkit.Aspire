@@ -78,6 +78,11 @@ public sealed class DurableTaskSchedulerResource(string name)
             return ReferenceExpression.Create($"{this.SchedulerName}");
         }
 
+        if (this.IsEmulator)
+        {
+            return ReferenceExpression.Create($"default");
+        }
+
         return ReferenceExpression.Create($"{this.Name}");
     }
 
