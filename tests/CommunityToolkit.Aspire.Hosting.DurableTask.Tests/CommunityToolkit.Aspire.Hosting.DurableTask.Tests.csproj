@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="..\..\examples\durable-task-scheduler\CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.AppHost\CommunityToolkit.Aspire.Hosting.DurableTask.Scheduler.AppHost.csproj" />
     <ProjectReference Include="..\..\src\CommunityToolkit.Aspire.Hosting.DurableTask\CommunityToolkit.Aspire.Hosting.DurableTask.csproj" />
     <ProjectReference Include="..\CommunityToolkit.Aspire.Testing\CommunityToolkit.Aspire.Testing.csproj" />
   </ItemGroup>
